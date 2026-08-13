@@ -1,7 +1,8 @@
 import asyncio
+import os
 from pathlib import Path
 
-from dotenv import dotenv_values
+from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, F
 from aiogram.filters import CommandStart
@@ -39,24 +40,28 @@ from services.ai_advisor import (
 BASE_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = BASE_DIR / ".env"
 
-config = dotenv_values(str(ENV_FILE))
+# Local kompyuterda .env bo'lsa, uni yuklaydi.
+# Railway'da esa Environment Variables ishlaydi.
 
-BOT_TOKEN = config.get("BOT_TOKEN") or ""
+# BOT_TOKEN:
+# 1. Railway Environment Variable'dan oladi
+# 2. Agar local bo'lsa .env'dan oladi
+load_dotenv(ENV_FILE)
+
+BOT_TOKEN: str = os.getenv("BOT_TOKEN") or ""
 
 if not BOT_TOKEN:
     raise ValueError(
-        f"BOT_TOKEN topilmadi!\n"
-        f".env fayl joylashuvi: {ENV_FILE}"
+        "BOT_TOKEN topilmadi! Railway Variables yoki .env faylni tekshiring."
     )
+
+BOT_TOKEN = BOT_TOKEN.strip()
 
 
 # =========================================================
 # BOT
 # =========================================================
-
 dp = Dispatcher()
-
-
 # =========================================================
 # STATES
 # =========================================================
@@ -590,6 +595,15 @@ async def crop_selected_handler(
 
     crop_key = message.text
 
+    if not crop_key:
+        await message.answer(
+            "❌ Ekin nomi aniqlanmadi. Iltimos, ekinni menyudan tanlang.",
+            reply_markup=crop_keyboard,
+        )
+        return
+
+    crop_key = crop_key.strip()
+
     await message.answer(
         "⏳ Bugungi real ob-havo olinmoqda...\n"
         "🧠 Ekin uchun tavsiya tayyorlanmoqda..."
@@ -844,10 +858,6 @@ async def unknown_handler(
 
 async def main():
 
-    bot = Bot(
-        token=BOT_TOKEN
-    )
-
     print("===================================")
     print("🌾 DEHQON AI ISHGA TUSHDI!")
     print("🌦 REAL WEATHER READY!")
@@ -856,7 +866,8 @@ async def main():
     print("🧠 AI ADVISOR READY!")
     print("===================================")
 
-    await dp.start_polling(bot)
+    async with Bot(token=BOT_TOKEN) as polling_bot:
+        await dp.start_polling(polling_bot)
 
 
 if __name__ == "__main__":
