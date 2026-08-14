@@ -48,16 +48,19 @@ ENV_FILE = BASE_DIR / ".env"
 # 2. Agar local bo'lsa .env'dan oladi
 load_dotenv(ENV_FILE)
 
-BOT_TOKEN: str = os.getenv("BOT_TOKEN") or ""
+def get_bot_token() -> str:
+    token = os.getenv("BOT_TOKEN")
 
-if not BOT_TOKEN:
-    raise ValueError(
-        "BOT_TOKEN topilmadi! Railway Variables yoki .env faylni tekshiring."
-    )
+    if not token:
+        raise RuntimeError(
+            "BOT_TOKEN topilmadi! "
+            "Railway Variables yoki local .env faylni tekshiring."
+        )
 
-BOT_TOKEN = BOT_TOKEN.strip()
+    return token.strip()
 
 
+BOT_TOKEN: str = get_bot_token()
 # =========================================================
 # BOT
 # =========================================================
