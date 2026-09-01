@@ -163,7 +163,26 @@ crop_keyboard = ReplyKeyboardMarkup(
         ],
         [
             KeyboardButton(text="🥔 Kartoshka"),
-            KeyboardButton(text="🍎 Mevali daraxtlar"),
+            KeyboardButton(text="🧅 Piyoz"),
+        ],
+        [
+            KeyboardButton(text="🥕 Sabzi"),
+            KeyboardButton(text="🫑 Qalampir"),
+        ],
+        [
+            KeyboardButton(text="🥬 Karam"),
+            KeyboardButton(text="🍆 Baqlajon"),
+        ],
+        [
+            KeyboardButton(text="🧄 Sarimsoq"),
+            KeyboardButton(text="🫘 Dukkakli ekinlar"),
+        ],
+        [
+            KeyboardButton(text="🍉 Qovun-tarvuz"),
+            KeyboardButton(text="🍓 Mevali daraxtlar"),
+        ],
+        [
+            KeyboardButton(text="🌱 Boshqa ekin"),
         ],
         [
             KeyboardButton(text="⬅️ Bosh menyu"),
@@ -171,8 +190,6 @@ crop_keyboard = ReplyKeyboardMarkup(
     ],
     resize_keyboard=True,
 )
-
-
 # =========================================================
 # REGIONS
 # =========================================================
