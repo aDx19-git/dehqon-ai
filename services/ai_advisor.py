@@ -1,1290 +1,754 @@
-# services/ai_advisor.py
-
 from __future__ import annotations
 
+import random
 import re
-from typing import Dict, List, Optional
+from typing import Any
 
 
 # =========================================================
-# DEHQON AI — UNIVERSAL AGRICULTURE ADVISOR
+# DEHQON AI — EKINLAR BAZASI
 # =========================================================
 
-# Bu fayl:
-# 1. foydalanuvchi yozgan matnni tozalaydi;
-# 2. o‘zbekcha/ruscha/xato/slang variantlarni taniydi;
-# 3. ekinni aniqlaydi;
-# 4. muammoni aniqlaydi;
-# 5. mos, batafsil maslahat beradi.
+CROPS: dict[str, dict[str, Any]] = {
 
-
-# =========================================================
-# 1. EKINLAR
-# =========================================================
-
-CROPS: Dict[str, Dict[str, object]] = {
-
+    # =====================================================
+    # POMIDOR
+    # =====================================================
     "pomidor": {
         "name": "🍅 Pomidor",
         "aliases": [
-            "pomidor",
-            "pamidor",
-            "pomdor",
-            "pomidr",
-            "помидор",
-            "памидор",
-            "томаты",
-            "томат",
-            "tomat",
+            "pomidor", "pamidor", "pomdor", "pomdr", "pomidorni",
+            "pamidorni", "помидор", "помидоры", "томат", "томаты"
         ],
         "advice": [
-            "Pomidor ildiz zonasida namlikning keskin o‘zgarishini yoqtirmaydi.",
-            "Sug‘orishdan oldin tuproqning ildiz joylashgan qatlamidagi namligini tekshirish foydali.",
-            "Faqat tuproq yuzasiga qarab sug‘orish haqida qaror qilmang.",
-            "Issiq kunlarda suv bug‘lanishi tezlashadi, shuning uchun namlikni tez-tez nazorat qilish kerak.",
-            "Yom‘irdan keyin qo‘shimcha sug‘orishga shoshilmang.",
-            "Suvni asosan ildiz atrofiga berish barglarni doimiy ho‘l qoldirishdan ko‘ra ma’qul.",
-            "Barglarning uzoq vaqt nam qolishi ayrim zamburug‘li kasalliklar xavfini oshirishi mumkin.",
-            "Teplitsada havo aylanishi yaxshi bo‘lishi muhim.",
-            "Juda zich barglar orasida namlik yig‘ilib qolmasligiga e’tibor bering.",
-            "Barg sarg‘ayishi faqat suv yetishmasligidan bo‘lmaydi; oziqa, ildiz va kasallik holatini ham tekshirish kerak.",
-            "Bargdagi dog‘larning rangi, shakli va qaysi barglarda paydo bo‘layotganini kuzating.",
-            "Bargning pastki tomonini ham zararkunandalar uchun tekshiring.",
-            "Gullash davrida keskin suv stressi o‘simlikning hosil shakllantirishiga ta’sir qilishi mumkin.",
-            "Azotli o‘g‘itni ortiqcha berish ko‘p barg va kamroq meva muvozanatiga olib kelishi mumkin.",
-            "Tuproqda suv uzoq turib qolsa, drenajni tekshiring.",
-            "Yovvoyi o‘tlarni nazorat qilish pomidorning suv va oziqa uchun raqobatini kamaytiradi.",
-            "Muammoni aniqlashda o‘simlikning yoshi va rivojlanish bosqichini hisobga oling.",
-            "Bir dona bargdagi belgiga qarab butun o‘simlik haqida xulosa qilishga shoshilmang.",
+            "Pomidor ildiz zonasida namlikning keskin o‘zgarishini yoqtirmaydi. Tuproq bir necha santimetr chuqurlikda quruqlashganini tekshirib, keyin sug‘orish ma’qul.",
+            "Sug‘orishda suvni barglarga sepishdan ko‘ra ildiz atrofiga sekin yetkazish foydaliroq. Nam barglar ayrim zamburug‘ kasalliklari uchun qulay sharoit yaratishi mumkin.",
+            "Gullash va meva tugish davrida namlikni bir tekis ushlash muhim. Uzoq quruqlikdan keyin birdaniga ko‘p suv berish mevalarda yorilish xavfini oshirishi mumkin.",
+            "Pomidor atrofida begona o‘tlarni nazorat qilish nafaqat oziqa uchun, balki havo aylanishi va zararkunandalarni kuzatish uchun ham muhim.",
+            "Pastki barglar tuproqqa tegib tursa, ularni muntazam tekshirib boring. Sarg‘aygan yoki kasallik alomatli barglarni sog‘lom qismdan ajratib kuzatish kerak.",
+            "Juda issiq kunlarda pomidorning barglari vaqtincha osilib qolishi mumkin. Avval tuproq namligini tekshiring, keyin qo‘shimcha suv berish haqida qaror qiling.",
+            "Teplitsada pomidor gullayotgan paytda havo almashinuvi muhim. Haddan tashqari nam va dim muhit changlanish hamda kasalliklar uchun noqulay bo‘lishi mumkin.",
+            "Pomidorni bir joyga yillar davomida ekish tuproqdagi ayrim kasallik va zararkunandalar bosimini oshirishi mumkin. Imkon bo‘lsa almashlab ekishni rejalashtiring.",
+            "O‘g‘itni ko‘p berish har doim hosilni oshirmaydi. Ayniqsa azotning ortiqchaligi barg massasini kuchaytirib, meva rivojlanishini muvozanatdan chiqarishi mumkin.",
+            "Meva hosil bo‘lish davrida o‘simlikning umumiy holatini, barg rangini va yangi o‘sishlarni birgalikda kuzating. Faqat bitta belgiga qarab o‘g‘it berishga shoshilmang.",
+            "Yomg‘irdan keyin pomidor qatorlari orasida suv turib qolsa, drenajni tekshiring. Ildiz zonasining uzoq vaqt suvga to‘yingan bo‘lishi muammo tug‘dirishi mumkin.",
+            "Pomidor ko‘chatlarini ko‘chirib o‘tkazgandan keyin dastlabki kunlarda namlikni keskin o‘zgartirmaslik va o‘simlikni asta-sekin yangi sharoitga moslashtirish foydali.",
+            "Zararkunanda paydo bo‘lsa, avval barglarning ostki qismini ham tekshiring. Ko‘plab mayda hasharotlar aynan shu joylarda yashirinadi.",
+            "Biror kasallikdan shubhalansangiz, zararlangan bargni boshqa o‘simliklarga tekkizmaslik va sug‘orish paytida barglarni ortiqcha ho‘llamaslik yaxshi amaliyot hisoblanadi.",
+            "Pomidor uchun eng yaxshi qaror ob-havo, tuproq turi, o‘simlik yoshi va o‘sish bosqichini birga hisobga olgan holda qilinadi."
         ],
     },
 
+    # =====================================================
+    # BODRING
+    # =====================================================
     "bodring": {
         "name": "🥒 Bodring",
         "aliases": [
-            "bodring",
-            "bodr",
-            "бодринг",
-            "огурец",
-            "огурцы",
-            "ogurets",
+            "bodring", "bodreng", "bodringni", "бодринг",
+            "огурец", "огурцы", "ogurets"
         ],
         "advice": [
-            "Bodring namlikka talabchan ekin hisoblanadi.",
-            "Tuproqning uzoq vaqt quruq qolishi o‘simlikni stressga tushirishi mumkin.",
-            "Namlikning keskin o‘zgarishi mevalarning shakliga ta’sir qilishi mumkin.",
-            "Issiq kunlarda tuproq namligini tez-tez tekshiring.",
-            "Yom‘irdan keyin qo‘shimcha suv berishdan oldin tuproqni tekshiring.",
-            "Barglarni doimiy ho‘l saqlashdan saqlanish foydali.",
-            "Teplitsada yuqori namlik va yomon shamollatish kasallik xavfini oshirishi mumkin.",
-            "Issiqxonada havo aylanishini nazorat qiling.",
-            "Barglarning pastki qismini mayda zararkunandalar uchun tekshiring.",
-            "Bargda oq kukunsimon qatlam paydo bo‘lsa, uni e’tiborsiz qoldirmang.",
-            "Barglarning cheti qurishi faqat suv yetishmasligidan bo‘lmasligi mumkin.",
-            "Mevalar g‘alati shakllansa, suv, changlanish va oziqlanishni birga tekshiring.",
-            "O‘simliklarni haddan tashqari zich joylashtirish havo aylanishini yomonlashtiradi.",
-            "Azotning ortiqcha berilishi vegetativ o‘sishni kuchaytirishi mumkin.",
-            "Ildiz atrofida suv uzoq turib qolmasligi kerak.",
-            "Kasallangan barglarning qayerdan boshlanganini kuzatib boring.",
-            "Hosilni muntazam yig‘ib turish o‘simlikning keyingi meva hosil qilishiga yordam beradi.",
+            "Bodring namlik yetishmasligiga sezgir, ammo ildiz atrofida doimiy suv turishi ham foydali emas.",
+            "Issiq kunlarda tuproq tez qurishi mumkin. Sug‘orishdan oldin faqat ustki qatlamga emas, ildiz joylashgan qatlamga ham qarang.",
+            "Bodring barglarini kechqurun uzoq vaqt nam holda qoldirmaslikka harakat qiling. Havo almashinuvi kasallik xavfini kamaytirishga yordam beradi.",
+            "Teplitsada namlik yuqori bo‘lsa, shamollatish ayniqsa muhim. Issiq va dim havo zamburug‘li kasalliklar xavfini oshirishi mumkin.",
+            "Bodring meva berayotgan paytda suvning keskin yetishmasligi mevalarning shakli va sifatiga ta’sir qilishi mumkin.",
+            "Tuproq yuzasini mulchalash namlikning tez bug‘lanishini kamaytirishga yordam beradi.",
+            "Bodringning barglari ostini muntazam tekshiring. Mayda zararkunandalar ko‘pincha aynan shu tomonda ko‘rinadi.",
+            "Sarg‘aygan eski barglarni sababini aniqlamasdan ko‘plab o‘g‘it bilan davolashga shoshilmang.",
+            "Yom‘g‘irdan keyin tuproq allaqachon nam bo‘lsa, odatdagi sug‘orish jadvalini avtomatik davom ettirmang.",
+            "Bodring ildizi yuzaga nisbatan yaqin joylashishi mumkin, shuning uchun tuproqni juda chuqur kovlashda ildizlarni shikastlamang.",
+            "Teplitsada kunduzgi issiqlik haddan oshsa, shamollatish vaqtini ob-havoga qarab moslashtiring.",
+            "Gullash davrida o‘simlikning umumiy oziqlanishi va namligi barqaror bo‘lishi muhim.",
+            "Bodring qatorlari juda zich bo‘lsa, havo aylanishi kamayadi. O‘simliklarni haddan tashqari zichlashtirmaslik foydali.",
+            "Kasallik alomati ko‘ringan barglarni muntazam kuzating va sog‘lom o‘simliklarga tegishdan oldin qo‘llarni yoki asboblarni tozalashga e’tibor bering.",
+            "Bodringda sug‘orish qarorini kalendar bo‘yicha emas, tuproq namligi va ob-havoga qarab qilish yaxshiroq."
         ],
     },
 
-    "qalampir": {
-        "name": "🌶 Qalampir",
-        "aliases": [
-            "qalampir",
-            "kalampir",
-            "qalamp",
-            "перец",
-            "перчик",
-            "pepper",
-        ],
-        "advice": [
-            "Qalampir issiqsevar ekin bo‘lib, keskin sovuqdan zarar ko‘rishi mumkin.",
-            "Tuproq namligini barqaror saqlash muhim.",
-            "Juda quruq tuproqdan keyin birdan ko‘p suv berish o‘simlikka stress berishi mumkin.",
-            "Sug‘orishdan oldin ildiz zonasidagi namlikni tekshiring.",
-            "Issiqda barglarning vaqtincha osilishi kuzatilishi mumkin, lekin tuproq holatini ham tekshirish kerak.",
-            "Barglarning doimiy osilib turishi qo‘shimcha tekshiruv talab qiladi.",
-            "Gullash davrida suv va oziqa ta’minotiga alohida e’tibor bering.",
-            "Meva shakllanishida namlikning keskin o‘zgarishidan saqlaning.",
-            "Barglarning yuqori va pastki tomonini zararkunandalar uchun tekshiring.",
-            "Teplitsada harorat va namlikni birgalikda kuzating.",
-            "Zich barglar orasida havo aylanishini yaxshilang.",
-            "Azotli o‘g‘itni me’yoridan oshirmang.",
-            "Ildiz atrofida suv to‘planib qolmasligi kerak.",
-            "Yovvoyi o‘tlarni nazorat qilish foydali.",
-            "Barglarning burishishi issiqdan tashqari zararkunanda yoki boshqa stress bilan ham bog‘liq bo‘lishi mumkin.",
-            "O‘simlikning yoshi va gullash bosqichi tashxisda muhim.",
-        ],
-    },
-
-    "baqlajon": {
-        "name": "🍆 Baqlajon",
-        "aliases": [
-            "baqlajon",
-            "baqlaj",
-            "баклажан",
-            "баклажаны",
-        ],
-        "advice": [
-            "Baqlajon issiqsevar ekin bo‘lib, iliq sharoitda yaxshi rivojlanadi.",
-            "Tuproq namligini keskin o‘zgartirmang.",
-            "Ortiqcha suv ildiz zonasida kislorod kamayishiga sabab bo‘lishi mumkin.",
-            "Issiq kunlarda tuproq namligini nazorat qiling.",
-            "Barglarning osilishi sababini suv bilan birga harorat va ildiz holati orqali tekshiring.",
-            "Gullash paytida keskin suv stressidan saqlaning.",
-            "Barglarning pastki tomonida mayda hasharotlarni qidiring.",
-            "Barglarda mayda nuqtalar ko‘payayotgan bo‘lsa, zararkunandalarni tekshiring.",
-            "Teplitsada shamollatish muhim.",
-            "Zich barglar orasida namlik uzoq saqlanmasin.",
-            "Azotli o‘g‘itni ortiqcha bermang.",
-            "Meva hosil bo‘lishida oziqlanish muvozanatini saqlang.",
-            "Suv to‘planadigan joylarda drenajni tekshiring.",
-            "Yovvoyi o‘tlarni vaqtida nazorat qiling.",
-            "Kasallikning qaysi barglardan boshlanganini kuzating.",
-            "Birgina alomat asosida kasallik nomini aniq deb qabul qilmang.",
-        ],
-    },
-
-    "kartoshka": {
-        "name": "🥔 Kartoshka",
-        "aliases": [
-            "kartoshka",
-            "kartosh",
-            "картошка",
-            "картофель",
-        ],
-        "advice": [
-            "Kartoshkada tuproq namligi hosil shakllanishi uchun muhim.",
-            "Uzoq davom etgan qurg‘oqchilik o‘simlikka stress beradi.",
-            "Ortiqcha namlik ildiz va tuganaklar bilan bog‘liq muammolarni kuchaytirishi mumkin.",
-            "Dalada suv to‘planadigan joylarni tekshiring.",
-            "Yom‘irdan keyin tuproqning qurish holatini kuzating.",
-            "Barglarda dog‘lar paydo bo‘lsa, ularning tarqalishini kuzating.",
-            "Barglarning pastki tomonini ham tekshiring.",
-            "Zararkunandalarni muntazam nazorat qiling.",
-            "Issiq va quruq davrda namlikni ko‘proq kuzating.",
-            "Yovvoyi o‘tlar suv va oziqa uchun raqobat qiladi.",
-            "Zich tuproq ildiz rivojlanishini cheklashi mumkin.",
-            "O‘g‘itlashni imkon qadar tuproq tahliliga asoslang.",
-            "Faqat barg rangiga qarab o‘g‘itni keskin oshirmang.",
-            "Hosilga yaqin davrda sug‘orish rejasini ob-havo bilan birga ko‘rib chiqing.",
-            "Kasallik belgilari ko‘payayotgan bo‘lsa, zararlangan joylarni alohida kuzating.",
-            "Bir xil muammo butun dalada bor-yo‘qligini bir nechta joydan tekshiring.",
-        ],
-    },
-
-    "piyoz": {
-        "name": "🧅 Piyoz",
-        "aliases": [
-            "piyoz",
-            "пиёз",
-            "лук",
-            "луковица",
-        ],
-        "advice": [
-            "Piyozda ortiqcha namlik ildiz va piyozbosh muammolarini kuchaytirishi mumkin.",
-            "Sug‘orishni tuproq namligiga qarab rejalashtiring.",
-            "Yom‘irdan keyin darhol qo‘shimcha suv bermang.",
-            "Tuproqning suvni qanchalik ushlab turishini hisobga oling.",
-            "Barglarning sarg‘ayishi rivojlanish bosqichiga qarab turli sababga ega bo‘lishi mumkin.",
-            "Barglarda mayda hasharotlar borligini tekshiring.",
-            "Piyoz ekilgan joyda suv uzoq turmasligi kerak.",
-            "Zich tuproq ildiz rivojlanishini qiyinlashtirishi mumkin.",
-            "Yovvoyi o‘tlarni nazorat qiling.",
-            "Azotli o‘g‘itni me’yoridan oshirmang.",
-            "Issiq va quruq havoda namlikni tekshiring.",
-            "Barglarda dog‘lar paydo bo‘lsa, ularning tarqalishini kuzating.",
-            "Sug‘orish vaqtini ob-havo bilan birga rejalashtiring.",
-            "Hosil pishishiga yaqin sug‘orish rejimi o‘zgarishi mumkin.",
-            "Kasallikni baholashda bargning qaysi qismidan boshlanganiga qarang.",
-            "Muammo davom etsa, tuproq tahlili foydali bo‘lishi mumkin.",
-        ],
-    },
-
-    "sarimsoq": {
-        "name": "🧄 Sarimsoq",
-        "aliases": [
-            "sarimsoq",
-            "sarmsoq",
-            "чеснок",
-        ],
-        "advice": [
-            "Sarimsoqda tuproqning ortiqcha nam bo‘lib qolishidan ehtiyot bo‘ling.",
-            "Suv to‘planadigan joylarda drenajni tekshiring.",
-            "Yom‘irdan keyin tuproq namligini baholang.",
-            "Barglarning sarg‘ayishini rivojlanish bosqichi bilan birga baholang.",
-            "Barglarda dog‘lar paydo bo‘lsa, tarqalishini kuzating.",
-            "Zararkunandalarni barg va tuproq yuzasida tekshiring.",
-            "Yovvoyi o‘tlarni nazorat qiling.",
-            "Tuproq zichlashib qolmasligi ildiz rivojlanishi uchun foydali.",
-            "O‘g‘itni me’yorida qo‘llang.",
-            "Azotni ortiqcha berish o‘simlik muvozanatini buzishi mumkin.",
-            "Issiq va quruq davrda namlikni nazorat qiling.",
-            "Sug‘orishni kalendar emas, tuproq holati bilan bog‘lang.",
-            "Hosilga yaqin davrda sug‘orish rejasini alohida baholang.",
-            "Kasallangan o‘simliklarni erta aniqlash muhim.",
-            "Bir nechta joydan o‘simliklarni tekshiring.",
-        ],
-    },
-
+    # =====================================================
+    # SABZI
+    # =====================================================
     "sabzi": {
         "name": "🥕 Sabzi",
         "aliases": [
-            "sabzi",
-            "сабзи",
-            "морковь",
-            "morkov",
+            "sabzi", "sabz", "sabzini", "sabzilar",
+            "морковь", "морковка", "моркови"
         ],
         "advice": [
-            "Sabzi uchun yumshoq va ildiz rivojlanishiga qulay tuproq muhim.",
-            "Zich tuproq ildizning shakllanishiga xalaqit berishi mumkin.",
-            "Sug‘orishda keskin quruq-nam almashinuvidan saqlaning.",
-            "Yom‘irdan keyin tuproq namligini tekshiring.",
-            "Ortiqcha suv drenaj muammolarini kuchaytirishi mumkin.",
-            "Yovvoyi o‘tlarni yosh davrda nazorat qilish juda muhim.",
-            "Tuproq yuzasida qattiq qatlam hosil bo‘lishiga yo‘l qo‘ymaslikka harakat qiling.",
-            "Barglarning rangidagi o‘zgarishlarni kuzating.",
-            "Sarg‘ayish sababini aniqlashda suv va oziqa holatini birga tekshiring.",
-            "Barglarda hasharotlar borligini tekshiring.",
-            "O‘g‘itlashni tuproq holatiga qarab qiling.",
-            "Azotni ortiqcha berish ildiz hosilining sifatiga ta’sir qilishi mumkin.",
-            "Issiq va quruq havoda namlikni muntazam kuzating.",
-            "Dalada suv turib qoladigan joylarni nazorat qiling.",
-            "Ildizning shakli tuproqning fizik holati bilan bog‘liq bo‘lishi mumkin.",
-            "Hosil rivojlanishini muntazam tekshirib boring.",
+            "Sabzi ildizmevasi tuproq ichida rivojlanadi, shuning uchun tuproqning zichligi uning shakliga katta ta’sir qilishi mumkin.",
+            "Juda qattiq yoki toshli tuproqda sabzi ildizi to‘g‘ri va bir xil rivojlanmasligi mumkin.",
+            "Urug‘ unib chiqayotgan davrda tuproq yuzasining butunlay qurib qolishiga yo‘l qo‘ymaslik muhim.",
+            "Sug‘orishdan keyin tuproq yuzasida qattiq qatlam hosil bo‘lsa, nihollarning chiqishi qiyinlashishi mumkin.",
+            "Sabzini juda ko‘p azot bilan oziqlantirish faqat barglarning kuchayishiga olib kelishi mumkin; o‘g‘itni tuproq holatiga qarab tanlash kerak.",
+            "Begona o‘tlarni erta nazorat qilish muhim, chunki yosh sabzi nihollari raqobatga sezgir.",
+            "Sabzi qatorlarini haddan tashqari zich qoldirmaslik ildizmevalarning kattalashishiga yordam beradi.",
+            "Yom‘irdan keyin dalada suv turib qolsa, drenajni tekshiring. Uzoq davom etgan ortiqcha namlik ildizlar uchun muammo bo‘lishi mumkin.",
+            "Quruq davrdan keyin birdaniga juda ko‘p suv berish o‘rniga namlikni asta-sekin tiklash ma’qul.",
+            "Sabzi dalasida bir xil ekinni ketma-ket ekish ayrim tuproq zararkunandalari bosimini oshirishi mumkin.",
+            "Ildizmevalarda yoriqlar paydo bo‘lsa, sug‘orishning keskin o‘zgarishi sabablaridan biri bo‘lishi mumkin.",
+            "Sabzi uchun yumshoq, yaxshi drenajlanadigan tuproq ildizning shakllanishi uchun qulay.",
+            "Hosilni yig‘ishdan oldin ortiqcha sug‘orishni avtomatik ravishda ko‘paytirish shart emas.",
+            "Sabzi barglaridagi o‘zgarishni kuzatish foydali, lekin muammoni aniqlashda tuproq namligi va ildiz holatini ham tekshirish kerak.",
+            "Sabzi uchun eng yaxshi parvarish — bir tekis namlik, begona o‘t nazorati, yumshoq tuproq va me’yoriy oziqlantirishning kombinatsiyasidir."
         ],
     },
 
+    # =====================================================
+    # KARTOSHKA
+    # =====================================================
+    "kartoshka": {
+        "name": "🥔 Kartoshka",
+        "aliases": [
+            "kartoshka", "kartoshkani", "kartosh", "картошка",
+            "картофель", "картошку"
+        ],
+        "advice": [
+            "Kartoshkada tuproq namligining keskin o‘zgarishi tuganaklarning rivojlanishiga salbiy ta’sir qilishi mumkin.",
+            "Gullash va tuganak hosil bo‘lish davrida namlik yetishmasligiga alohida e’tibor bering.",
+            "Dalada suv turib qolishi ildiz va tuganaklar uchun noqulay. Drenaj muammosi bo‘lsa, sug‘orishni ko‘paytirish emas, sababni bartaraf etish kerak.",
+            "Tuproqni yumshatish va qator orasini begona o‘tlardan tozalash kartoshkaning rivojlanishiga yordam beradi.",
+            "Tuganaklar quyoshga chiqib qolsa, yashil rangga kirishi mumkin. Shuning uchun tuproq bilan qoplanganligini kuzating.",
+            "Juda issiq ob-havoda tuproq namligini tez-tez tekshirish foydali.",
+            "Kartoshkani yillar davomida bir joyga ekish kasallik va zararkunanda bosimini oshirishi mumkin.",
+            "Azotni ortiqcha berish poyaning kuchli o‘sishiga olib kelishi mumkin, shuning uchun oziqlantirish muvozanatli bo‘lishi kerak.",
+            "Yom‘irdan keyin tuproq nam bo‘lsa, qo‘shimcha sug‘orishni shoshmasdan rejalashtiring.",
+            "Kartoshka barglarida dog‘lar paydo bo‘lsa, faqat rangiga emas, dog‘ning shakli va tarqalish tezligiga ham qarang.",
+            "Zararkunandalarni erta aniqlash uchun barglarning yuqori va pastki qismini tekshirish foydali.",
+            "Tuproq juda zich bo‘lsa, tuganaklarning shakli va kattaligi bir tekis bo‘lmasligi mumkin.",
+            "Sug‘orish jadvalini faqat kun sanog‘iga qarab emas, ob-havo va tuproq namligiga qarab moslang.",
+            "Hosil yig‘ishdan oldin o‘simlikning poyasi va barglari holatini kuzatish yig‘im vaqtini rejalashtirishga yordam beradi.",
+            "Kartoshkada yuqori hosil uchun suvning o‘zi yetarli emas: sog‘lom urug‘lik, almashlab ekish, tuproq va zararkunanda nazorati birgalikda muhim."
+        ],
+    },
+
+    # =====================================================
+    # PIYOZ
+    # =====================================================
+    "piyoz": {
+        "name": "🧅 Piyoz",
+        "aliases": [
+            "piyoz", "piyozni", "пиёз", "лук", "луковица"
+        ],
+        "advice": [
+            "Piyoz ildiz zonasida ortiqcha suv turib qolishini yoqtirmaydi.",
+            "Yosh nihollar davrida begona o‘tlarni nazorat qilish ayniqsa muhim.",
+            "Piyozning bosh hosil qilishi davrida suv rejimining keskin o‘zgarishidan saqlanish foydali.",
+            "Yom‘irdan keyin tuproq namligini tekshirib, odatdagi sug‘orishni avtomatik davom ettirmang.",
+            "Piyoz barglarida sarg‘ayish ko‘rinsa, darhol o‘g‘it bermasdan avval namlik, ildiz va zararkunandalarni tekshiring.",
+            "Juda zich ekish havo almashinuvini kamaytirishi mumkin.",
+            "Azotning ortiqcha miqdori barg o‘sishini kuchaytirishi mumkin.",
+            "Hosil pishishiga yaqin namlikni boshqarish muhim, chunki ortiqcha namlik saqlanish sifatiga ta’sir qilishi mumkin.",
+            "Piyoz uchun yaxshi drenajlanadigan tuproq foydali.",
+            "Piyoz ekilgan joyda suv turib qolsa, sug‘orishni ko‘paytirish muammoni kuchaytirishi mumkin.",
+            "Zararkunandalarni aniqlash uchun barglarning bukilgan va ichki qismlarini ham tekshiring.",
+            "Almashlab ekish tuproqdagi ayrim muammolarni kamaytirishga yordam beradi.",
+            "Quruq va issiq ob-havoda yosh piyozning tuproq namligini tez-tez tekshirish kerak.",
+            "Hosil yig‘ilgach, piyozni yaxshi shamollatiladigan sharoitda quritish saqlanish sifatini yaxshilaydi.",
+            "Piyozda parvarish qarorini o‘simlikning yoshiga, tuproq turiga va ob-havoga qarab o‘zgartirish kerak."
+        ],
+    },
+
+    # =====================================================
+    # SARIMSOQ
+    # =====================================================
+    "sarimsoq": {
+        "name": "🧄 Sarimsoq",
+        "aliases": [
+            "sarimsoq", "sarimsoqni", "саримсоқ",
+            "чеснок", "чеснока"
+        ],
+        "advice": [
+            "Sarimsoq uchun yaxshi drenaj muhim, chunki doimiy ortiqcha namlik ildiz zonasiga zarar yetkazishi mumkin.",
+            "Vegetatsiya boshida tuproq namligini barqaror ushlash foydali.",
+            "Hosil pishishiga yaqin ortiqcha sug‘orishni kamaytirish ayrim sharoitlarda saqlanish sifatiga yordam beradi.",
+            "Begona o‘tlarni erta yo‘qotish sarimsoqning oziqa va suv uchun raqobatini kamaytiradi.",
+            "Barglarning sarg‘ayishi har doim azot yetishmasligini anglatmaydi; tabiiy pishish jarayoni ham shunday ko‘rinishi mumkin.",
+            "Sarimsoq ekilgan joyda suv to‘planmasligini tekshiring.",
+            "Almashlab ekish tuproqdagi kasallik bosimini kamaytirishga yordam berishi mumkin.",
+            "Zich ekish havo aylanishini kamaytirishi mumkin.",
+            "Juda issiq kunlarda tuproq namligini tekshirib, sug‘orishni shunga qarab moslang.",
+            "Yom‘irdan keyin qo‘shimcha suv berishga shoshilmang.",
+            "Barglarda dog‘lar paydo bo‘lsa, ularning qayerdan boshlanganini va tez tarqalayotganini kuzating.",
+            "Sarimsoqni yig‘ishdan oldin boshlarning rivojlanishi va barglarning tabiiy qurishini hisobga olish kerak.",
+            "Hosildan keyin yaxshi shamollatish sarimsoqni saqlashda muhim.",
+            "O‘g‘it miqdorini faqat o‘simlikning tashqi ko‘rinishiga qarab oshirmang.",
+            "Sarimsoq uchun namlik, drenaj, tuproq unumdorligi va almashlab ekish birgalikda boshqarilganda natija yaxshiroq bo‘ladi."
+        ],
+    },
+
+    # =====================================================
+    # QALAMPIR
+    # =====================================================
+    "qalampir": {
+        "name": "🫑 Qalampir",
+        "aliases": [
+            "qalampir", "qalampirni", "bolgar qalampiri",
+            "bulg'or qalampiri", "перец", "болгарский перец"
+        ],
+        "advice": [
+            "Qalampir issiqsevar ekin bo‘lib, keskin sovuq sharoitda o‘sishi sekinlashishi mumkin.",
+            "Tuproq namligini keskin o‘zgartirmaslik gullash va meva hosil bo‘lish davrida ayniqsa muhim.",
+            "Juda issiq kunlarda tuproq tez qurishi mumkin, shuning uchun namlikni qo‘l bilan tekshirib turing.",
+            "Barglarni doimiy namlab sug‘orishdan ko‘ra ildiz zonasini namlash ma’qul.",
+            "Teplitsada ortiqcha namlik va yomon havo almashinuvi kasallik xavfini oshirishi mumkin.",
+            "Azotni haddan tashqari ko‘paytirish vegetativ o‘sishni kuchaytirishi mumkin.",
+            "Meva hosil bo‘lish davrida o‘simlikning suv va oziqa holatini barqaror saqlash foydali.",
+            "Barglarning pastki qismini zararkunandalar uchun muntazam tekshiring.",
+            "Yom‘irdan keyin tuproq namligini tekshirib, sug‘orishni shunga qarab belgilang.",
+            "Qalampir ildizlari shikastlanmasligi uchun qator orasini juda chuqur kovlamang.",
+            "Ko‘chatni yangi joyga o‘tkazganda dastlabki davrda namlik va quyosh ta’sirini kuzatish kerak.",
+            "Keskin issiqdan keyin o‘simlikni faqat ko‘rinishiga qarab ortiqcha sug‘orishdan saqlaning.",
+            "Kasallik belgilari ko‘rinsa, zararlangan barglarni kuzatib, havo aylanishini yaxshilang.",
+            "Hosilni muntazam yig‘ib turish ayrim navlarda yangi mevalarning rivojlanishiga yordam beradi.",
+            "Qalampir parvarishida nav xususiyati, tuproq, ob-havo va o‘simlikning rivojlanish bosqichi birga hisobga olinishi kerak."
+        ],
+    },
+
+    # =====================================================
+    # BAQLAJON
+    # =====================================================
+    "baqlajon": {
+        "name": "🍆 Baqlajon",
+        "aliases": [
+            "baqlajon", "baqlajonni", "баклажан",
+            "баклажаны", "баклажанни"
+        ],
+        "advice": [
+            "Baqlajon issiq sharoitni yaxshi ko‘radi, sovuqda o‘sishi sekinlashishi mumkin.",
+            "Tuproq namligini bir tekis saqlash gullash va meva hosil bo‘lishida muhim.",
+            "Ildiz zonasida suv turib qolmasligi uchun drenajni tekshiring.",
+            "Juda issiq kunlarda sug‘orishdan oldin tuproq namligini tekshirish kerak.",
+            "Barglarning pastki qismini zararkunandalar uchun tekshirib turing.",
+            "Teplitsada shamollatish havo namligini boshqarishga yordam beradi.",
+            "Azotning ortiqcha berilishi barg va poyaning haddan tashqari o‘sishiga olib kelishi mumkin.",
+            "Yom‘irdan keyin qo‘shimcha sug‘orishga shoshilmang.",
+            "Meva tugish davrida namlikning keskin o‘zgarishi o‘simlikka stress berishi mumkin.",
+            "O‘simliklar orasida yetarli havo almashinuvi bo‘lishi foydali.",
+            "Ko‘chatni ko‘chirib o‘tkazishda ildizlarni imkon qadar kam bezovta qilish kerak.",
+            "Barglarda dog‘ paydo bo‘lsa, ularning shakli va tarqalishiga e’tibor bering.",
+            "Begona o‘tlar suv va oziqa uchun raqobat qiladi, ayniqsa yosh o‘simliklarda.",
+            "Hosilni haddan tashqari kechiktirmaslik ayrim navlarda sifatni saqlashga yordam beradi.",
+            "Baqlajonda parvarishning asosiy nuqtalari — issiqlik, barqaror namlik, drenaj va zararkunandalarni erta aniqlash."
+        ],
+    },
+
+    # =====================================================
+    # KARAM
+    # =====================================================
     "karam": {
         "name": "🥬 Karam",
         "aliases": [
-            "karam",
-            "кочан",
-            "капуста",
-            "капустa",
+            "karam", "karamni", "капуста", "капусту"
         ],
         "advice": [
-            "Karamda suv va oziqa ta’minotining barqarorligi muhim.",
-            "Tuproq uzoq vaqt quruq qolmasligi kerak.",
-            "Ortiqcha namlik ildiz muammolarini kuchaytirishi mumkin.",
-            "Sug‘orishdan oldin tuproq namligini tekshiring.",
-            "Barglarning pastki tomonini zararkunandalar uchun tekshiring.",
-            "Barglarda teshiklar paydo bo‘lsa, sababini tekshiring.",
-            "Teshiklarning shakli va qayerda paydo bo‘layotganini kuzating.",
-            "Yovvoyi o‘tlar bilan raqobatni kamaytiring.",
-            "Zich ekish havo aylanishini yomonlashtirishi mumkin.",
-            "Yom‘irdan keyin barglarning uzoq nam qolishiga e’tibor bering.",
-            "Issiq havoda tuproq namligini tez-tez tekshiring.",
-            "O‘g‘itlashni rivojlanish bosqichiga moslashtiring.",
-            "Azotni ortiqcha bermang.",
-            "Barglarning sarg‘ayishini suv, oziqa va kasallik bilan birga baholang.",
-            "Karam bosh hosil qilayotgan paytda namlikni keskin o‘zgartirmang.",
-            "Bir nechta belgini birga tahlil qilish aniqroq xulosa beradi.",
+            "Karam barg massasi katta bo‘lgani uchun vegetatsiya davrida yetarli namlikka ehtiyoj sezadi.",
+            "Tuproqning doimiy suvga to‘yingan bo‘lishi ildizlar uchun zararli.",
+            "Yosh karamda begona o‘tlarni erta nazorat qilish muhim.",
+            "Barglarning ichki va tashqi qismini zararkunandalar uchun muntazam tekshiring.",
+            "Karam kapalagi va boshqa zararkunandalar tuxumlarini erta aniqlash katta zarar oldini olishga yordam beradi.",
+            "Yom‘irdan keyin qo‘shimcha sug‘orishni tuproq namligiga qarab belgilang.",
+            "Juda issiq kunlarda namlikni muntazam kuzatish kerak.",
+            "Karam uchun tuproqning unumdorligi muhim, ammo o‘g‘it miqdorini tuproq holatiga moslashtirish kerak.",
+            "Juda zich ekish havo almashinuvini kamaytirishi mumkin.",
+            "Karam bosh hosil qilayotgan davrda namlikning keskin o‘zgarishi sifatga ta’sir qilishi mumkin.",
+            "Almashlab ekish tuproqdagi ayrim kasallik va zararkunandalar bosimini kamaytirishga yordam beradi.",
+            "Barglar sarg‘aysa, namlik, ildiz holati va oziqa muammolarini birgalikda tekshiring.",
+            "Kasallangan barglarni uzoq vaqt dalada qoldirmaslik foydali.",
+            "Tuproq yuzasini mulchalash namlikni ushlab turishga yordam berishi mumkin.",
+            "Karamda yaxshi natija uchun suv, oziqa, havo almashinuvi va zararkunanda nazoratini birgalikda boshqaring."
         ],
     },
 
-    "lavlagi": {
-        "name": "🟣 Lavlagi",
-        "aliases": [
-            "lavlagi",
-            "lavlag",
-            "свекла",
-            "svekla",
-        ],
-        "advice": [
-            "Lavlagi uchun tuproq namligining barqarorligi muhim.",
-            "Juda quruq tuproq ildiz rivojlanishini cheklashi mumkin.",
-            "Ortiqcha suv ildiz zonasida muammo tug‘dirishi mumkin.",
-            "Yom‘irdan keyin sug‘orishni shoshilmasdan rejalashtiring.",
-            "Tuproq zichligini tekshiring.",
-            "Yovvoyi o‘tlarni erta nazorat qilish foydali.",
-            "Barglarning rangini muntazam kuzating.",
-            "Sarg‘ayish sababini aniqlashda tuproq va suv holatini tekshiring.",
-            "Barglarda dog‘lar bo‘lsa, ularning tarqalishini kuzating.",
-            "Zararkunandalarni bargning ikki tomonida tekshiring.",
-            "O‘g‘itni tuproq holatiga qarab tanlang.",
-            "Azotni ortiqcha berishdan saqlaning.",
-            "Issiq havoda namlik tezroq kamayishi mumkin.",
-            "Drenaj yomon joylarda suv to‘planishiga yo‘l qo‘ymang.",
-            "Ildiz shakli tuproqning fizik holatiga bog‘liq bo‘lishi mumkin.",
-            "Hosil rivojlanishini muntazam kuzating.",
-        ],
-    },
-
-    "makkajo'xori": {
-        "name": "🌽 Makkajo‘xori",
-        "aliases": [
-            "makkajo'xori",
-            "makkajoxori",
-            "makkajo",
-            "makkajo‘xori",
-            "маккажўхори",
-            "кукуруза",
-            "кукурўза",
-            "kukuruza",
-        ],
-        "advice": [
-            "Makkajo‘xorida suv talabi rivojlanish bosqichiga qarab o‘zgaradi.",
-            "Faol o‘sish davrida tuproq namligini muntazam nazorat qilish muhim.",
-            "Yom‘irdan keyin qo‘shimcha sug‘orishdan oldin tuproqni tekshiring.",
-            "Uzoq qurg‘oqchilik o‘sish va hosil shakllanishiga ta’sir qilishi mumkin.",
-            "Ortiqcha namlik ildiz zonasida havo kamayishiga olib kelishi mumkin.",
-            "Dalada suv turib qoladigan joylarni aniqlang.",
-            "Yovvoyi o‘tlar yosh o‘simlik bilan kuchli raqobat qiladi.",
-            "Barglarning burishishi yoki osilishi suv stressini ko‘rsatishi mumkin.",
-            "Barg rangidagi o‘zgarishlarni oziqlanish bilan birga baholang.",
-            "Azotli oziqlanishda me’yor juda muhim.",
-            "Azotni ortiqcha qo‘llash samarasiz bo‘lishi va ayrim muammolarni kuchaytirishi mumkin.",
-            "Issiq va quruq davrda namlikni tez-tez tekshiring.",
-            "Kuchli shamol va issiq birga kelganda stress oshishi mumkin.",
-            "Ildiz zonasining holatini tekshiring.",
-            "Kasallik va zararkunanda belgilarini erta aniqlash muhim.",
-            "Barglarda dog‘ paydo bo‘lsa, tarqalishini kuzating.",
-            "Sug‘orishni faqat kalendar bo‘yicha emas, tuproq va ob-havoga qarab belgilang.",
-        ],
-    },
-
+    # =====================================================
+    # BUG‘DOY
+    # =====================================================
     "bug'doy": {
         "name": "🌾 Bug‘doy",
         "aliases": [
-            "bug'doy",
-            "bugdoy",
-            "bug'doy",
-            "бугдой",
-            "пшеница",
-            "pshenitsa",
+            "bug'doy", "bug‘doy", "bugdoy", "bugdoyni",
+            "бугдой", "пшеница", "пшеницу"
         ],
         "advice": [
-            "Bug‘doyning suvga ehtiyoji rivojlanish bosqichiga qarab o‘zgaradi.",
-            "Tuproq namligi ekinning umumiy holatini baholashda muhim.",
-            "Kuchli yom‘irdan keyin dalada suv turib qolmaganini tekshiring.",
-            "Ortiqcha namlik ildiz zonasida muammo tug‘dirishi mumkin.",
-            "Quruq davrda barg va poya holatini kuzating.",
-            "Barg rangining o‘zgarishi oziqa yetishmasligi bilan bog‘liq bo‘lishi mumkin.",
-            "Bargdagi dog‘lar kasallik belgisi bo‘lishi mumkin, ammo aniq tashxis uchun qo‘shimcha belgilar kerak.",
-            "Zararkunandalarni dalada muntazam tekshiring.",
-            "Yovvoyi o‘tlar suv va oziqa uchun raqobat qiladi.",
-            "Azotli o‘g‘itni rivojlanish bosqichiga mos qo‘llang.",
-            "Azotni ortiqcha berish o‘simlikning yotib qolish xavfini oshirishi mumkin.",
-            "Shamolli va nam ob-havoda o‘simlik holatini diqqat bilan kuzating.",
-            "Hosilga yaqin davrda ob-havo prognozini hisobga oling.",
-            "Sug‘orish qarorini tuproq turi va yog‘ingarchilik bilan birga baholang.",
-            "Dalaning bir nechta joyidan tekshiruv o‘tkazing.",
-            "Faqat bitta o‘simlikka qarab butun dala haqida xulosa qilmang.",
-            "Muammo keng tarqalgan bo‘lsa, agronom bilan maslahatlashish ma’qul.",
+            "Bug‘doyda namlik ehtiyoji o‘sish bosqichiga qarab o‘zgaradi; barcha davrda bir xil sug‘orish talab qilinmaydi.",
+            "Yom‘irdan keyin dalada suv turib qolsa, drenaj holatini tekshiring.",
+            "Nihollik davrida begona o‘tlar bilan raqobatni kamaytirish muhim.",
+            "Azotli oziqlantirishni faqat o‘simlik rangiga qarab emas, tuproq va rivojlanish bosqichiga qarab rejalashtirish ma’qul.",
+            "Juda zich ekin maydonida havo almashinuvi kamayishi mumkin.",
+            "Issiq va quruq davrda tuproq namligi hosil shakllanishiga ta’sir qilishi mumkin.",
+            "Kasalliklarni erta aniqlash uchun barglarning yuqori va pastki qismlarini kuzatish foydali.",
+            "Almashlab ekish tuproq unumdorligi va ayrim kasalliklarni boshqarishda yordam beradi.",
+            "Urug‘lik sifati kelajakdagi nihol zichligi va ekin bir xilligiga ta’sir qiladi.",
+            "Kuchli yom‘irdan keyin tuproq qobig‘i hosil bo‘lsa, nihollarning chiqishiga ta’sir qilishi mumkin.",
+            "Shamolli sharoitda tuproq namligi tezroq kamayishi mumkin.",
+            "Hosilga yaqin davrda ortiqcha sug‘orish har doim foydali emas; ob-havo va pishish bosqichini hisobga olish kerak.",
+            "Daladagi ayrim joylarda o‘sish sust bo‘lsa, butun maydonga bir xil o‘g‘it berishdan oldin sababni aniqlang.",
+            "Zararkunanda soni ko‘payayotgan bo‘lsa, tarqalish maydonini kuzatish va iqtisodiy zarar chegarasini hisobga olish foydali.",
+            "Bug‘doyda hosilni faqat o‘g‘it bilan emas, urug‘lik, ekish muddati, namlik, begona o‘t va kasallik nazorati bilan birgalikda boshqarish kerak."
         ],
     },
 
-    "qovoq": {
-        "name": "🎃 Qovoq",
+    # =====================================================
+    # MAKKAJO‘XORI
+    # =====================================================
+    "makkajo'xori": {
+        "name": "🌽 Makkajo‘xori",
         "aliases": [
-            "qovoq",
-            "qovo",
-            "тыква",
-            "тыквы",
+            "makkajo'xori", "makkajo‘xori", "makkajoxori",
+            "makkajo", "кукуруза", "кукурузу"
         ],
         "advice": [
-            "Qovoq issiq sharoitda yaxshi rivojlanadi.",
-            "Tuproq namligini barqaror ushlash muhim.",
-            "Yosh o‘simliklarda suv stressi tezroq sezilishi mumkin.",
-            "Yom‘irdan keyin sug‘orishni tuproq holatiga qarab belgilang.",
-            "Ortiqcha namlik ildiz muammolarini kuchaytirishi mumkin.",
-            "Barglarda dog‘lar paydo bo‘lsa, ularning tarqalishini kuzating.",
-            "Barglarning pastki tomonini zararkunandalar uchun tekshiring.",
-            "Yovvoyi o‘tlarni nazorat qiling.",
-            "Gullash paytida suv va oziqa ta’minotiga e’tibor bering.",
-            "Issiq va quruq havoda namlikni tez-tez tekshiring.",
-            "Zich barglar orasida havo aylanishini yaxshilang.",
-            "Azotli o‘g‘itni me’yoridan oshirmang.",
-            "Meva hosil bo‘lish davrida namlikni keskin o‘zgartirmang.",
-            "Suv to‘planadigan joylarda drenajni tekshiring.",
-            "Kasallikni birgina alomat bilan aniqlashga shoshilmang.",
-        ],
-    },
-
-    "qovoqcha": {
-        "name": "🥒 Qovoqcha",
-        "aliases": [
-            "qovoqcha",
-            "kabachki",
-            "кабачок",
-            "кабачки",
-            "zucchini",
-        ],
-        "advice": [
-            "Qovoqcha namlikni yaxshi ko‘radi, ammo suvning uzoq turib qolishi zararli bo‘lishi mumkin.",
-            "Sug‘orishdan oldin ildiz zonasini tekshiring.",
-            "Issiq havoda tuproq namligini nazorat qiling.",
-            "Yom‘irdan keyin qo‘shimcha suvga shoshilmang.",
-            "Barglarni uzoq vaqt ho‘l qoldirmaslikka harakat qiling.",
-            "Barglarning pastki tomonini zararkunandalar uchun tekshiring.",
-            "Oq dog‘ yoki qatlam paydo bo‘lsa, kuzatuvni kuchaytiring.",
-            "Gullash davrida suv stressidan saqlaning.",
-            "Yovvoyi o‘tlarni nazorat qiling.",
-            "Zich o‘simliklar orasida havo aylanishini yaxshilang.",
-            "Azotni ortiqcha bermang.",
-            "Mevalarni muntazam yig‘ib turish foydali.",
-            "Suv to‘planadigan joylarda drenajni tekshiring.",
-            "Barglarning keskin sarg‘ayish sababini tekshiring.",
-            "Muammoni aniqlashda ob-havo va sug‘orish tarixini ham hisobga oling.",
-        ],
-    },
-
-    "no'xat": {
-        "name": "🫛 No‘xat",
-        "aliases": [
-            "no'xat",
-            "noxat",
-            "nohat",
-            "нохот",
-            "горох",
-            "gorox",
-        ],
-        "advice": [
-            "No‘xatda ortiqcha namlik ildiz zonasiga zarar yetkazishi mumkin.",
-            "Tuproqning suvni ushlab turish xususiyatini hisobga oling.",
-            "Yom‘irdan keyin sug‘orishga shoshilmang.",
-            "Issiq va quruq davrda o‘simlik holatini kuzating.",
-            "Barg rangidagi o‘zgarishlarni muntazam tekshiring.",
-            "Yovvoyi o‘tlar bilan raqobatni kamaytiring.",
-            "Barglarning pastki tomonini zararkunandalar uchun tekshiring.",
-            "Kasallik alomatlari paydo bo‘lsa, tarqalish tezligini kuzating.",
-            "Zich ekilgan joylarda havo aylanishiga e’tibor bering.",
-            "O‘g‘itni me’yorida qo‘llang.",
-            "Azotli o‘g‘itni ortiqcha berishga ehtiyot bo‘ling.",
-            "Gullash davrida namlik sharoitini nazorat qiling.",
-            "Suv turib qoladigan joylarni yaxshilang.",
-            "Muammoni baholashda o‘simlikning rivojlanish bosqichini hisobga oling.",
-            "Bir nechta joydan o‘simliklarni tekshirish aniqroq xulosa beradi.",
-        ],
-    },
-
-    "loviya": {
-        "name": "🫘 Loviya",
-        "aliases": [
-            "loviya",
-            "lovya",
-            "fasol",
-            "фасоль",
-            "lovi",
-        ],
-        "advice": [
-            "Loviya uchun namlik muhim, lekin ortiqcha suvdan ehtiyot bo‘lish kerak.",
-            "Sug‘orishdan oldin ildiz zonasidagi namlikni tekshiring.",
-            "Issiq havoda suv stressini kuzating.",
+            "Makkajo‘xorida suvga ehtiyoj o‘sish bosqichiga qarab o‘zgaradi.",
+            "Gullash va don shakllanish davrida namlik tanqisligiga alohida e’tibor berish kerak.",
+            "Juda issiq kunlarda tuproq namligini muntazam tekshiring.",
             "Yom‘irdan keyin qo‘shimcha sug‘orishni tuproq holatiga qarab belgilang.",
-            "Barglarda dog‘ yoki rang o‘zgarishini kuzating.",
-            "Barglarning pastki tomonini zararkunandalar uchun tekshiring.",
-            "Yovvoyi o‘tlarni nazorat qiling.",
-            "Zich ekilgan joylarda havo aylanishini yaxshilang.",
-            "Gullash davrida suv stressidan saqlanish muhim.",
-            "Azotni ortiqcha berishdan saqlaning.",
-            "O‘simlikning umumiy holatini bir nechta joydan tekshiring.",
-            "Suv turib qoladigan tuproqlarda drenajni yaxshilang.",
-            "Kasallik tarqalishini erta kuzatish foydali.",
-            "Ob-havo keskin o‘zgarsa, sug‘orish rejasini qayta ko‘rib chiqing.",
-            "Hosil shakllanishida namlikni barqaror saqlashga e’tibor bering.",
+            "Dalada suv turib qolishi ildizlar uchun muammo bo‘lishi mumkin.",
+            "Yosh makkajo‘xorida begona o‘tlar bilan raqobat hosilga sezilarli ta’sir qilishi mumkin.",
+            "Azotli oziqlantirishni o‘simlikning rivojlanish bosqichiga moslashtirish foydali.",
+            "Shamol kuchli bo‘ladigan hududlarda o‘simliklarning yotib qolish xavfini hisobga oling.",
+            "Tuproq yuzasida qattiq qatlam hosil bo‘lsa, yosh nihollarning chiqishini kuzating.",
+            "Kasallik yoki zararkunanda alomatlari ko‘ringanda butun dalani emas, avval zararlangan joylarning tarqalishini baholang.",
+            "Makkajo‘xori uchun tuproq unumdorligi va ildiz rivojlanishi muhim.",
+            "Almashlab ekish tuproq va kasalliklarni boshqarishga yordam beradi.",
+            "Quruq davrdan keyin birdaniga haddan tashqari ko‘p suv berish o‘rniga namlikni me’yorida tiklash ma’qul.",
+            "Hosilga yaqin davrda ob-havo va donning pishish holatini birga kuzating.",
+            "Makkajo‘xorida eng muhim boshqaruv nuqtalari — namlik, begona o‘t, oziqlanish va gullash davridagi stressni kamaytirish."
         ],
     },
 
+    # =====================================================
+    # TARVUZ
+    # =====================================================
     "tarvuz": {
         "name": "🍉 Tarvuz",
         "aliases": [
-            "tarvuz",
-            "tarbus",
-            "арбуз",
-            "arbuз",
+            "tarvuz", "tarvuzni", "арбуз", "арбузы"
         ],
         "advice": [
-            "Tarvuz issiqsevar ekin bo‘lib, quyoshli sharoitni yaxshi ko‘radi.",
-            "Yosh o‘simliklarda tuproq namligini nazorat qilish muhim.",
-            "Meva shakllanish davrida suv stressidan saqlanish kerak.",
-            "Yom‘irdan keyin sug‘orishga shoshilmang.",
-            "Ortiqcha namlik ildiz muammolarini kuchaytirishi mumkin.",
-            "Suvni ildiz zonasiga yetkazish ma’qul.",
-            "Barglarning uzoq nam qolishidan saqlaning.",
-            "Barglarda dog‘ va zararkunandalarni muntazam tekshiring.",
-            "Yovvoyi o‘tlar bilan raqobatni kamaytiring.",
-            "Issiq va shamolli kunlarda namlik tezroq kamayishi mumkin.",
-            "Azotni ortiqcha berish vegetativ o‘sishni kuchaytirishi mumkin.",
-            "Gullash davrida o‘simlik holatini diqqat bilan kuzating.",
-            "Meva rivojlanishida sug‘orishni keskin o‘zgartirmang.",
-            "Suv to‘planadigan joylarda drenajni tekshiring.",
-            "Ob-havo va tuproq holatini birgalikda hisobga oling.",
+            "Tarvuz issiqsevar ekin bo‘lib, sovuq tuproqda boshlang‘ich rivojlanishi sekinlashishi mumkin.",
+            "Meva kattalashayotgan davrda namlik muhim, ammo suv turib qolishi ildizlar uchun zararli.",
+            "Yom‘irdan keyin sug‘orishni tuproq namligiga qarab belgilang.",
+            "Meva pishishiga yaqin sug‘orish rejimini ob-havo va tuproq holatiga moslashtirish kerak.",
+            "Juda quruq davrdan keyin birdaniga ko‘p suv berish mevalarning yorilish xavfini oshirishi mumkin.",
+            "Tarvuzda begona o‘tlarni erta nazorat qilish muhim.",
+            "Barglarning ostini zararkunandalar uchun tekshiring.",
+            "Tez-tez barglarni ho‘llashdan ko‘ra ildiz zonasini sug‘orish ma’qul.",
+            "Tuproqni mulchalash namlikning bug‘lanishini kamaytirishi mumkin.",
+            "O‘g‘itni ortiqcha berish meva sifatini har doim yaxshilamaydi.",
+            "Bir joyda takroriy ekish ayrim tuproq kasalliklari bosimini oshirishi mumkin.",
+            "Meva yotgan joyda doimiy ortiqcha namlik bo‘lmasligiga e’tibor bering.",
+            "Kuchli shamol va issiqda barglarning holatini kuzating.",
+            "Mevaning pishish belgilarini faqat bitta belgiga qarab emas, bir nechta belgini birgalikda baholab aniqlash yaxshiroq.",
+            "Tarvuzda hosil sifati uchun issiqlik, ildiz zonasidagi namlik, tuproq va o‘simlikning oziqlanishini birga boshqarish kerak."
         ],
     },
 
+    # =====================================================
+    # QOVUN
+    # =====================================================
     "qovun": {
         "name": "🍈 Qovun",
         "aliases": [
-            "qovun",
-            "ковун",
-            "дыня",
-            "dinya",
+            "qovun", "qovunni", "дыня", "дыни"
         ],
         "advice": [
-            "Qovun issiq va yorug‘ sharoitni yaxshi ko‘radi.",
-            "Tuproq namligini rivojlanish bosqichiga qarab kuzating.",
-            "Yom‘irdan keyin sug‘orishga shoshilmang.",
-            "Ortiqcha namlik ildiz zonasiga zarar yetkazishi mumkin.",
-            "Gullash davrida keskin suv stressidan saqlaning.",
-            "Meva rivojlanishida sug‘orish rejimini barqaror tutish foydali.",
-            "Barglarda dog‘ paydo bo‘lsa, tarqalishini kuzating.",
-            "Zararkunandalarni bargning ikki tomonidan tekshiring.",
-            "Yovvoyi o‘tlarni nazorat qiling.",
-            "Issiq va shamolli havoda tuproq tez qurishi mumkin.",
-            "Azotni ortiqcha bermang.",
-            "Suv turib qoladigan joylarda drenajni tekshiring.",
-            "Barglarning keskin sarg‘ayishi sababini tekshiring.",
-            "Hosilga yaqin davrda sug‘orish rejasini ob-havo bilan birga baholang.",
-            "O‘simlikning bir nechta joyini tekshirib, umumiy holatni baholang.",
+            "Qovun issiqsevar ekin bo‘lib, quyosh va issiqlik yetarli bo‘lishi muhim.",
+            "O‘sish davrida namlik kerak, ammo ildiz zonasida suv turib qolmasligi kerak.",
+            "Meva rivojlanayotgan davrda quruqlik stressini kamaytirish foydali.",
+            "Meva pishishiga yaqin suv rejimini ob-havo va tuproq namligiga qarab moslang.",
+            "Yom‘irdan keyin qo‘shimcha sug‘orishga shoshilmang.",
+            "Begona o‘tlar yosh qovun nihollari bilan suv va oziqa uchun raqobat qiladi.",
+            "Barglarning pastki qismini zararkunandalar uchun muntazam tekshiring.",
+            "Mulcha tuproq namligini saqlashga yordam berishi mumkin.",
+            "Juda zich o‘sish havo almashinuvini kamaytirishi mumkin.",
+            "Kasallik alomatlari ko‘ringan barglarni muntazam kuzatib boring.",
+            "Azotning ortiqcha miqdori vegetativ o‘sishni kuchaytirishi mumkin.",
+            "Quruq davrdan keyin keskin sug‘orish rejimi o‘zgarishidan saqlanish foydali.",
+            "Tuproqning drenaji yomon bo‘lsa, sug‘orishni ko‘paytirish muammoni hal qilmaydi.",
+            "Hosilga yaqin davrda ob-havo va mevaning pishish belgilarini birgalikda kuzating.",
+            "Qovunda sifatli hosil uchun issiqlik, namlikning barqarorligi, yaxshi drenaj va zararkunanda nazorati muhim."
         ],
     },
 
-    "redis": {
-        "name": "🌱 Redis",
+    # =====================================================
+    # QULUPNAY
+    # =====================================================
+    "qulupnay": {
+        "name": "🍓 Qulupnay",
         "aliases": [
-            "redis",
-            "rediska",
-            "редис",
-            "редиска",
+            "qulupnay", "qulubnay", "qulupnayni",
+            "клубника", "клубнику", "земляника"
         ],
         "advice": [
-            "Redis tez rivojlanadigan ekin bo‘lgani uchun namlikning keskin o‘zgarishi sezilarli ta’sir qilishi mumkin.",
-            "Tuproqni haddan tashqari quritib yubormang.",
-            "Ortiqcha suvdan ham ehtiyot bo‘ling.",
-            "Tuproqning yumshoq bo‘lishi ildizmeva shakllanishi uchun muhim.",
-            "Yovvoyi o‘tlarni yosh davrda nazorat qiling.",
-            "Issiq sharoitda tuproq namligini tez-tez tekshiring.",
-            "Barglarning rangini kuzating.",
-            "Barglarda hasharotlar borligini tekshiring.",
-            "Yom‘irdan keyin sug‘orishga shoshilmang.",
-            "Tuproq yuzasida qattiq qatlam paydo bo‘lishiga yo‘l qo‘ymang.",
-            "O‘g‘itni me’yorida qo‘llang.",
-            "Azotni ortiqcha bermang.",
-            "Hosilni kechiktirib yubormaslik kerak.",
-            "Bir nechta o‘simlikni tekshirib, rivojlanish bir xilligini baholang.",
-            "Muammoni ob-havo va tuproq holati bilan birga tahlil qiling.",
+            "Qulupnay ildizlari nisbatan yuza joylashishi sababli tuproq namligini tez-tez kuzatish foydali.",
+            "Namlik yetishmasligi gullash va meva kattalashishiga ta’sir qilishi mumkin.",
+            "Ortiqcha namlik esa ildiz kasalliklari xavfini oshirishi mumkin.",
+            "Mevalarni uzoq vaqt nam qoldirmaslikka harakat qiling.",
+            "Somon yoki boshqa mos mulch mevalarning tuproqqa tegishini kamaytirishga yordam beradi.",
+            "Qator orasidagi begona o‘tlarni nazorat qilish muhim.",
+            "Barglarning pastki qismini zararkunandalar uchun tekshiring.",
+            "Yom‘irdan keyin sug‘orishni tuproq namligiga qarab belgilang.",
+            "Qulupnay ekilgan joyda suv turib qolsa, drenajni yaxshilang.",
+            "Kasallangan barglarni muntazam kuzatib, o‘simliklar orasida havo aylanishiga e’tibor bering.",
+            "Bir joyda juda uzoq vaqt yetishtirish kasallik va zararkunanda bosimini oshirishi mumkin.",
+            "O‘g‘itni me’yoridan ortiq berish barg o‘sishini kuchaytirib, meva sifatiga salbiy ta’sir qilishi mumkin.",
+            "Issiq davrda mulch tuproq harorati va namligini barqarorlashtirishga yordam beradi.",
+            "Hosilni muntazam yig‘ish pishgan mevalarning dalada ortiqcha qolib ketishining oldini oladi.",
+            "Qulupnayda namlik, drenaj, havo almashinuvi va mevalarni quruq saqlash juda muhim."
         ],
     },
 
-    "ismaloq": {
-        "name": "🥬 Ismaloq",
+    # =====================================================
+    # UZUM
+    # =====================================================
+    "uzum": {
+        "name": "🍇 Uzum",
         "aliases": [
-            "ismaloq",
-            "исмалоқ",
-            "шпинат",
-            "shpinat",
+            "uzum", "uzumni", "виноград", "виноградник"
         ],
         "advice": [
-            "Ismaloq salqinroq sharoitda yaxshi rivojlanadi.",
-            "Issiq havoda o‘simlik tezroq stressga tushishi mumkin.",
-            "Tuproq namligini muntazam nazorat qiling.",
-            "Yom‘irdan keyin qo‘shimcha suv bermang.",
-            "Ortiqcha namlik ildiz muammolarini kuchaytirishi mumkin.",
-            "Barglarning rangini kuzating.",
-            "Barglarning pastki tomonini zararkunandalar uchun tekshiring.",
-            "Zich ekilgan joylarda havo aylanishiga e’tibor bering.",
-            "Yovvoyi o‘tlarni nazorat qiling.",
-            "Azotli o‘g‘itni me’yorida qo‘llang.",
-            "Barglarda dog‘ paydo bo‘lsa, tarqalishini kuzating.",
-            "Issiqda namlikni tez-tez tekshiring.",
-            "Sug‘orish vaqtini ob-havo bilan birga belgilang.",
-            "Kasallik belgilarini erta aniqlash foydali.",
-            "Hosilni o‘z vaqtida yig‘ish muhim.",
+            "Uzumda sug‘orish rejimi nav, tuproq va ob-havoga qarab o‘zgaradi.",
+            "Gullash va meva shakllanish davrida o‘simlik stressini kamaytirish muhim.",
+            "Yom‘irdan keyin qo‘shimcha sug‘orishdan oldin tuproq namligini tekshiring.",
+            "Tokzor ichida havo aylanishi yaxshi bo‘lishi barglarning uzoq vaqt nam qolishini kamaytiradi.",
+            "Juda zich barg massasini nazorat qilish quyosh nuri va havo almashinuviga yordam beradi.",
+            "Kasallik va zararkunandalarni barglarning ikki tomonida tekshiring.",
+            "Azotni ortiqcha berish haddan tashqari vegetativ o‘sishni kuchaytirishi mumkin.",
+            "Tuproqda suv turib qolmasligi uchun drenaj holatini kuzating.",
+            "Meva pishish davrida suv rejimining keskin o‘zgarishidan saqlanish foydali.",
+            "Tokni kesish va shakllantirish ishlarini nav va o‘sish kuchiga moslashtirish kerak.",
+            "Quruq va issiq davrda yosh toklar alohida nazorat talab qilishi mumkin.",
+            "Begona o‘tlar suv va oziqa uchun raqobat qiladi.",
+            "Hosil zichligi juda yuqori bo‘lsa, havo almashinuvi va meva sifati bilan bog‘liq muammolar paydo bo‘lishi mumkin.",
+            "Yom‘g‘irli davrda kasallik alomatlarini tez-tez kuzatish foydali.",
+            "Uzumchilikda sug‘orish, kesish, barg massasini boshqarish, tuproq va kasallik nazoratini bir tizim sifatida olib borish kerak."
+        ],
+    },
+
+    # =====================================================
+    # MEVALI DARAXTLAR
+    # =====================================================
+    "mevali daraxtlar": {
+        "name": "🍎 Mevali daraxtlar",
+        "aliases": [
+            "mevali daraxt", "mevali daraxtlar", "olma", "olmani",
+            "nok", "nokni", "shaftoli", "shaftolini",
+            "o'rik", "o‘rik", "olcha", "gilos",
+            "яблоня", "яблоню", "груша", "персик",
+            "абрикос", "вишня"
+        ],
+        "advice": [
+            "Mevali daraxtlarda sug‘orish faqat daraxt tanasi yoniga ozgina suv berish bilan cheklanmasligi kerak; ildizlar tarqalgan zona ham hisobga olinadi.",
+            "Yosh daraxtlarning ildiz tizimi hali kichik bo‘lgani uchun issiq va quruq davrda alohida kuzatuv kerak.",
+            "Yom‘irdan keyin qo‘shimcha sug‘orishdan oldin tuproq namligini tekshiring.",
+            "Daraxt tagida suv doimiy turib qolsa, drenaj muammosini tekshirish kerak.",
+            "Azotni ko‘p berish meva o‘rniga kuchli barg va novda o‘sishini rag‘batlantirishi mumkin.",
+            "Meva tugish davrida namlikning keskin yetishmasligi hosilning rivojlanishiga ta’sir qilishi mumkin.",
+            "Daraxtning tanasi va asosiy shoxlarini zararkunandalar va kasallik alomatlari uchun tekshirib turing.",
+            "Quruq shoxlarni o‘z vaqtida olib tashlash daraxt tojining sog‘lom shakllanishiga yordam beradi.",
+            "Toj juda zich bo‘lsa, ichki qismlarga havo va yorug‘lik kamroq kirishi mumkin.",
+            "Mulchalash ildiz zonasida namlikni saqlashga yordam beradi, ammo mulchni daraxt tanasiga bevosita bosib qo‘ymaslik kerak.",
+            "Meva hosili juda ko‘p bo‘lsa, ayrim daraxtlarda mevalarni me’yorlash foydali bo‘lishi mumkin.",
+            "Kuchli shamol, issiq yoki sovuqdan keyin yangi novdalar va barglarning holatini tekshiring.",
+            "Mevali daraxtni bir marta ko‘rib, butun muammoni aniqlash qiyin; barg, novda, meva, tuproq va ildiz zonasini birgalikda baholash kerak.",
+            "Kasallik yoki zararkunanda gumoni bo‘lsa, alomatlarning qachondan boshlanganini va qaysi shoxlarda ko‘proq ekanini kuzating.",
+            "Mevali daraxtlarda hosil sifati uchun sug‘orish, kesish, oziqlantirish, tuproq, changlanish va kasallik nazoratini birgalikda boshqarish kerak."
         ],
     },
 }
 
 
 # =========================================================
-# 2. SO‘ZLARNI NORMALIZATSIYA QILISH
+# NORMALIZATSIYA
 # =========================================================
-
-WORD_REPLACEMENTS = {
-    # -------------------------
-    # O‘zbekcha xatolar
-    # -------------------------
-    "pamidor": "pomidor",
-    "pomidr": "pomidor",
-    "pomdor": "pomidor",
-
-    "bodr": "bodring",
-    "bodrin": "bodring",
-
-    "kalampir": "qalampir",
-    "qalamp": "qalampir",
-
-    "baqlaj": "baqlajon",
-
-    "kartosh": "kartoshka",
-
-    "sarmsoq": "sarimsoq",
-
-    "noxat": "no'xat",
-    "nohat": "no'xat",
-
-    "lovya": "loviya",
-
-    "makkajo": "makkajo'xori",
-    "makkajoxori": "makkajo'xori",
-
-    "bugdoy": "bug'doy",
-
-    # -------------------------
-    # Sug‘orish
-    # -------------------------
-    "sugor": "sug'orish",
-    "sugorish": "sug'orish",
-    "sug'orish": "sug'orish",
-    "sugoraman": "sug'orish",
-    "sug'oraman": "sug'orish",
-    "sugorsam": "sug'orish",
-    "sug'orsam": "sug'orish",
-    "sugoray": "sug'orish",
-    "sug'oray": "sug'orish",
-    "suvber": "suv",
-    "suvberay": "suv",
-
-    # -------------------------
-    # Slang / qisqartmalar
-    # -------------------------
-    "kere": "kerak",
-    "keremi": "kerakmi",
-    "boladi": "bo'ladi",
-    "boladimi": "bo'ladimi",
-    "qiliw": "qilish",
-    "qilw": "qilish",
-    "qilaman": "qilish",
-    "qivor": "qilish",
-    "qivur": "qilish",
-    "qanaqa": "qanday",
-    "qando": "qanday",
-    "qanday": "qanday",
-    "nma": "nima",
-    "nima": "nima",
-    "nmaga": "nimaga",
-    "nega": "nima uchun",
-    "qachon": "qachon",
-
-    # -------------------------
-    # Ruscha yozuvlar
-    # -------------------------
-    "памидор": "помидор",
-    "помидоры": "помидор",
-    "томаты": "помидор",
-    "томата": "помидор",
-
-    "огурцы": "огурец",
-    "огурца": "огурец",
-
-    "баклажаны": "баклажан",
-
-    "картофель": "картошка",
-
-    "морковь": "морковь",
-
-    "капуста": "капуста",
-
-    "перчик": "перец",
-
-    # Ruscha mavzular
-    "поливать": "sug'orish",
-    "полив": "sug'orish",
-    "полива": "sug'orish",
-    "поливаю": "sug'orish",
-    "полить": "sug'orish",
-    "вода": "suv",
-    "воды": "suv",
-
-    "дождь": "yomg'ir",
-    "дождя": "yomg'ir",
-    "дожди": "yomg'ir",
-
-    "жара": "issiq",
-    "жарко": "issiq",
-    "горячо": "issiq",
-
-    "болезнь": "kasallik",
-    "болеет": "kasallik",
-
-    "вредитель": "zararkunanda",
-    "вредители": "zararkunanda",
-    "насекомые": "zararkunanda",
-
-    "желтеет": "sarg'ayish",
-    "желтые": "sarg'ayish",
-    "желтый": "sarg'ayish",
-
-    "сохнет": "qurish",
-    "вянет": "so'lish",
-    "вянут": "so'lish",
-
-    "теплица": "teplitsa",
-    "парник": "teplitsa",
-}
-
 
 def normalize_text(text: str) -> str:
     """
-    Foydalanuvchi matnini:
-    - kichik harfga;
-    - apostroflarni bir xil ko‘rinishga;
-    - ortiqcha belgilarni olib;
-    - xato/slang/ruscha variantlarni standart shaklga
-    keltiradi.
+    Foydalanuvchi yozgan matnni qidirish uchun
+    soddalashtirilgan ko‘rinishga keltiradi.
     """
 
-    text = str(text or "").lower().strip()
+    text = text.lower().strip()
 
-    # Apostrof variantlari
-    text = (
-        text
-        .replace("‘", "'")
-        .replace("’", "'")
-        .replace("`", "'")
-        .replace("ʻ", "'")
-    )
+    replacements = {
+        "’": "'",
+        "‘": "'",
+        "ʻ": "'",
+        "`": "'",
+        "´": "'",
+    }
 
-    # Harf orasidagi ortiqcha belgilar
-    text = re.sub(r"[!?.,;:(){}\[\]\"/\\]+", " ", text)
+    for old, new in replacements.items():
+        text = text.replace(old, new)
+
+    # Ruscha/uzbekcha yozuvdagi ayrim farqlar
+    text = text.replace("ё", "е")
+
+    # Ortiqcha belgilarni bo‘sh joyga aylantirish
+    text = re.sub(r"[^\w\s']", " ", text, flags=re.UNICODE)
+
+    # Bir nechta bo‘sh joyni bittaga tushirish
     text = re.sub(r"\s+", " ", text).strip()
-
-    # Uzun variantlarni oldin almashtirish
-    replacements = sorted(
-        WORD_REPLACEMENTS.items(),
-        key=lambda item: len(item[0]),
-        reverse=True,
-    )
-
-    for old, new in replacements:
-        pattern = rf"(?<!\w){re.escape(old)}(?!\w)"
-        text = re.sub(pattern, new, text)
 
     return text
 
 
 # =========================================================
-# 3. EKINNI ANIQLASH
+# EKINNI ANIQLASH
 # =========================================================
 
-def find_crop(text: str) -> Optional[str]:
-    """
-    Savolda qaysi ekin borligini aniqlaydi.
-    """
+def detect_crop(question: str) -> str | None:
+    text = normalize_text(question)
 
-    normalized = normalize_text(text)
+    # Avval uzun aliaslarni tekshiramiz
+    aliases: list[tuple[str, str]] = []
 
-    # Avval aliaslardan foydalanamiz.
     for crop_key, crop_data in CROPS.items():
-        aliases = crop_data.get("aliases", [])
+        for alias in crop_data["aliases"]:
+            aliases.append((normalize_text(alias), crop_key))
 
-        for alias in aliases:
-            alias = normalize_text(alias)
+    aliases.sort(key=lambda item: len(item[0]), reverse=True)
 
-            if alias and alias in normalized:
-                return crop_key
+    for alias, crop_key in aliases:
+        if not alias:
+            continue
 
-    # Standart nomlar
-    for crop_key in CROPS:
-        if crop_key in normalized:
+        # So‘z ichidan qidirish
+        if re.search(rf"(?<!\w){re.escape(alias)}(?!\w)", text):
             return crop_key
 
     return None
 
 
 # =========================================================
-# 4. MAVZUNI ANIQLASH
+# SAVOL TURINI ANIQLASH
 # =========================================================
 
-TOPIC_KEYWORDS = {
+def detect_topic(question: str) -> str:
+    text = normalize_text(question)
 
-    "sug'orish": [
-        "sug'orish",
-        "suv",
-        "полив",
-        "поливать",
-        "полить",
-        "sugor",
-    ],
+    topics = {
+        "watering": [
+            "sugor", "sug'or", "suv", "namlik",
+            "полив", "поливать", "вода", "влажность"
+        ],
+        "rain": [
+            "yomgir", "yomg'ir", "yomg'ir", "yomgirli",
+            "дождь", "дождик"
+        ],
+        "heat": [
+            "issiq", "issiqda", "jazirama", "harorat",
+            "qizib", "жара", "жарко", "температура"
+        ],
+        "cold": [
+            "sovuq", "sovuqda", "muz", "sovuq tush",
+            "холод", "мороз"
+        ],
+        "disease": [
+            "kasallik", "kasal", "dog", "dog'lar",
+            "sargay", "sarg'ay", "chir", "zamburug",
+            "болезнь", "болеет", "пятна", "гниль", "грибок"
+        ],
+        "pest": [
+            "zararkunanda", "hasharot", "qurt", "kana",
+            "shira", "kapalak", "вредитель", "насекомое",
+            "червь", "клещ", "тля"
+        ],
+        "fertilizer": [
+            "ogit", "o'g'it", "oziqa", "azot",
+            "fosfor", "kaliy", "удобрение", "азот",
+            "калий", "фосфор"
+        ],
+        "soil": [
+            "tuproq", "yer", "dala", "unumdor",
+            "почва", "земля", "грунт"
+        ],
+    }
 
-    "yomg'ir": [
-        "yomg'ir",
-        "yomgir",
-        "дождь",
-        "дожди",
-    ],
-
-    "issiq": [
-        "issiq",
-        "juda issiq",
-        "жара",
-        "жарко",
-        "qizib",
-        "qizigan",
-    ],
-
-    "sovuq": [
-        "sovuq",
-        "muz",
-        "sovub",
-        "холод",
-        "холодно",
-        "замороз",
-    ],
-
-    "kasallik": [
-        "kasallik",
-        "kasal",
-        "dog'",
-        "dog",
-        "mog'or",
-        "mogor",
-        "chir",
-        "грибок",
-        "болезнь",
-    ],
-
-    "zararkunanda": [
-        "zararkunanda",
-        "hasharot",
-        "qurt",
-        "kana",
-        "bit",
-        "kapalak",
-        "вредитель",
-        "насеком",
-        "червь",
-    ],
-
-    "sarg'ayish": [
-        "sarg'ay",
-        "sargay",
-        "sariq",
-        "желте",
-        "желтый",
-        "желтые",
-    ],
-
-    "so'lish": [
-        "so'lish",
-        "solish",
-        "so'lib",
-        "solib",
-        "osilib",
-        "вянет",
-        "вянут",
-    ],
-
-    "teplitsa": [
-        "teplitsa",
-        "issiqxona",
-        "теплица",
-        "парник",
-    ],
-
-    "o'g'it": [
-        "o'g'it",
-        "og'it",
-        "o'g'itlash",
-        "gubre",
-        "удобр",
-        "подкорм",
-    ],
-
-    "tuproq": [
-        "tuproq",
-        "yer",
-        "земля",
-        "почва",
-    ],
-}
-
-
-def find_topics(text: str) -> List[str]:
-    """
-    Savolda bir nechta mavzu bo‘lsa, hammasini qaytaradi.
-    """
-
-    normalized = normalize_text(text)
-    found = []
-
-    for topic, keywords in TOPIC_KEYWORDS.items():
+    for topic, keywords in topics.items():
         for keyword in keywords:
-            keyword = normalize_text(keyword)
-
-            if keyword and keyword in normalized:
-                found.append(topic)
-                break
-
-    return found
-
-
-# =========================================================
-# 5. UMUMIY MAVZU MASLAHATLARI
-# =========================================================
-
-GENERAL_TOPIC_ADVICE = {
-
-    "sug'orish": [
-        "Sug‘orish vaqtini faqat soat yoki kalendarga qarab emas, tuproq namligiga qarab belgilang.",
-        "Yom‘irdan keyin tuproq namligini tekshirmasdan yana suv berish ortiqcha namlikka olib kelishi mumkin.",
-        "Issiq va shamolli havoda suv bug‘lanishi tezlashadi.",
-        "Ortiqcha sug‘orish ham o‘simlikka zarar yetkazishi mumkin.",
-        "Ildiz zonasida suv uzoq turib qolsa, drenajni tekshirish kerak.",
-    ],
-
-    "yomg'ir": [
-        "Yom‘irdan keyin qo‘shimcha sug‘orishga shoshilmang.",
-        "Dalada suv to‘planib qolgan joylarni tekshiring.",
-        "Teplitsada tashqi namlik yuqori bo‘lsa, havo almashinuvini nazorat qiling.",
-        "Barglar uzoq vaqt nam qolsa, ayrim kasalliklar xavfi oshishi mumkin.",
-        "Yom‘ir miqdorini tuproq turi bilan birga baholash kerak.",
-    ],
-
-    "issiq": [
-        "Issiq havoda tuproq namligini tez-tez tekshiring.",
-        "O‘simlikning barglari kunning qaysi vaqtida osilayotganini kuzating.",
-        "Sug‘orishni ortiqcha ko‘paytirishdan oldin ildiz zonasidagi haqiqiy namlikni tekshiring.",
-        "Tuproq yuzasining juda tez qurishi mulchalash kabi usullarni ko‘rib chiqishga sabab bo‘lishi mumkin.",
-        "Teplitsada harorat haddan tashqari oshmasligi uchun shamollatishni nazorat qiling.",
-    ],
-
-    "sovuq": [
-        "Sovuq tushishi kutilayotgan bo‘lsa, issiqsevar ekinlarning holatini oldindan tekshiring.",
-        "Sovuqdan keyin barg va yosh novdalardagi o‘zgarishlarni kuzating.",
-        "Zararlangan o‘simlikka darhol ortiqcha o‘g‘it yoki suv berishga shoshilmang.",
-        "Ob-havo yana sovuqlashishi mumkin bo‘lsa, himoya choralarini oldindan rejalashtiring.",
-        "Ekinning sovuqqa chidamliligi turiga va rivojlanish bosqichiga bog‘liq.",
-    ],
-
-    "kasallik": [
-        "Kasallikni aniqlashda faqat bitta belgiga emas, bir nechta belgiga qarang.",
-        "Bargning yuqori va pastki tomonini tekshiring.",
-        "Dog‘ning rangi, shakli va kattalashish tezligini kuzating.",
-        "Muammo bir o‘simlikdami yoki butun qatordami — aniqlang.",
-        "Oxirgi kunlardagi yom‘ir, namlik va sug‘orish holatini hisobga oling.",
-    ],
-
-    "zararkunanda": [
-        "Barglarning yuqori va pastki tomonini tekshiring.",
-        "Yangi barglar va yosh novdalarni alohida kuzating.",
-        "Mayda hasharotlar, tuxumlar yoki yopishqoq izlar borligini tekshiring.",
-        "Zararkunanda sonining oshib borayotganini kuzatish muhim.",
-        "Zararkunandaning turi noma’lum bo‘lsa, kuchli vositani tasodifiy ishlatishga shoshilmang.",
-    ],
-
-    "sarg'ayish": [
-        "Barg sarg‘ayishi suv, oziqa, ildiz, tabiiy qarish yoki kasallik bilan bog‘liq bo‘lishi mumkin.",
-        "Avval sarg‘ayish qaysi barglardan boshlanganini aniqlang.",
-        "Tuproq namligini tekshiring.",
-        "Bargning pastki tomonini zararkunandalar uchun ko‘ring.",
-        "Sarg‘ayish bilan birga dog‘, qurish yoki chirish bor-yo‘qligini tekshiring.",
-    ],
-
-    "so'lish": [
-        "So‘lishni faqat suv yetishmasligi deb qabul qilmang.",
-        "Avval ildiz zonasidagi tuproq namligini tekshiring.",
-        "Tuproq haddan tashqari nam bo‘lsa, ildiz muammosi ehtimolini ham hisobga oling.",
-        "Issiq paytda so‘lish kuchliroq ko‘rinishi mumkin.",
-        "Barglarning qaysi vaqtda so‘lishini kuzatish sababni aniqlashga yordam beradi.",
-    ],
-
-    "teplitsa": [
-        "Teplitsada harorat va namlikni birgalikda kuzatish kerak.",
-        "Yuqori namlik va yomon shamollatish kasallik xavfini oshirishi mumkin.",
-        "Issiq paytda havo almashinuvini kuchaytirish kerak bo‘lishi mumkin.",
-        "Kechasi ortiqcha namlik yig‘ilib qolmasligiga e’tibor bering.",
-        "Sug‘orish rejimini teplitsa ichidagi mikroiqlim bilan birga belgilang.",
-    ],
-
-    "o'g'it": [
-        "O‘g‘it miqdorini faqat o‘simlik rangiga qarab keskin oshirmang.",
-        "Imkon bo‘lsa, tuproq tahlili asosida oziqlantirish rejasini tuzing.",
-        "Azotning ortiqchaligi har doim yaxshi hosil degani emas.",
-        "O‘g‘itlashda ekinning rivojlanish bosqichini hisobga oling.",
-        "Ortiqcha o‘g‘it ildiz zonasidagi tuz konsentratsiyasini oshirishi mumkin.",
-    ],
-
-    "tuproq": [
-        "Tuproqning mexanik tarkibi sug‘orish rejasiga katta ta’sir qiladi.",
-        "Qumli tuproq suvni tezroq o‘tkazishi mumkin.",
-        "Og‘ir tuproqda suv uzoqroq saqlanishi mumkin.",
-        "Tuproqning zichlashib qolishi ildizlarning rivojlanishiga xalaqit berishi mumkin.",
-        "Drenaj muammosi bo‘lsa, faqat sug‘orishni kamaytirish bilan cheklanib qolmaslik kerak.",
-    ],
-}
-
-
-# =========================================================
-# 6. SAVOL MAQSADINI ANIQLASH
-# =========================================================
-
-def detect_intent(text: str) -> str:
-    """
-    Foydalanuvchi aslida nima so‘rayotganini taxmin qiladi.
-    """
-
-    text = normalize_text(text)
-
-    if any(x in text for x in [
-        "qachon",
-        "когда",
-    ]):
-        return "when"
-
-    if any(x in text for x in [
-        "qancha",
-        "necha",
-        "сколько",
-        "много",
-    ]):
-        return "amount"
-
-    if any(x in text for x in [
-        "nega",
-        "nimaga",
-        "sababi",
-        "почему",
-        "отчего",
-    ]):
-        return "why"
-
-    if any(x in text for x in [
-        "qanday",
-        "qanaqa",
-        "qando",
-        "как",
-        "что делать",
-    ]):
-        return "how"
-
-    if any(x in text for x in [
-        "mumkinmi",
-        "boladimi",
-        "bo'ladimi",
-        "можно",
-    ]):
-        return "can"
+            if normalize_text(keyword) in text:
+                return topic
 
     return "general"
 
 
 # =========================================================
-# 7. SAVOLGA MOS KIRISH QISMI
+# MAVZUGA MOS MASLAHATNI TANLASH
 # =========================================================
 
-def intent_intro(intent: str) -> str:
-
-    if intent == "when":
-        return "🕐 Qachon qilish masalasi bo‘yicha:"
-
-    if intent == "amount":
-        return "📏 Miqdor bo‘yicha muhim jihatlar:"
-
-    if intent == "why":
-        return "🔎 Mumkin bo‘lgan sabablar:"
-
-    if intent == "how":
-        return "🛠 Qanday qilish bo‘yicha:"
-
-    if intent == "can":
-        return "✅ Mumkin yoki mumkin emasligini baholashda:"
-
-    return "📌 Muhim jihatlar:"
-
-
-# =========================================================
-# 8. BATAFSIL JAVOB YARATISH
-# =========================================================
-
-def build_crop_answer(
+def get_relevant_advice(
     crop_key: str,
-    topics: List[str],
-    intent: str,
-    question: str,
-) -> str:
+    topic: str,
+    limit: int = 5,
+) -> list[str]:
 
     crop = CROPS[crop_key]
-    crop_name = str(crop["name"])
-    advice = list(crop["advice"])
+    advice = crop["advice"]
 
-    response: List[str] = [
-        f"{crop_name}",
-        "",
-        "🧠 DEHQON AI MASLAHATI",
-        "",
+    # Har bir maslahatni topic bo‘yicha taxminiy kalit so‘zlar bilan
+    # moslashtirishga harakat qilamiz.
+    topic_keywords = {
+        "watering": [
+            "namlik", "sug‘or", "sug'or", "suv", "quruq"
+        ],
+        "rain": [
+            "yom‘ir", "yomg‘ir", "yomg'ir", "yomgir", "nam"
+        ],
+        "heat": [
+            "issiq", "harorat", "bug‘lan", "bug'lan"
+        ],
+        "cold": [
+            "sovuq", "muz", "harorat"
+        ],
+        "disease": [
+            "kasallik", "zamburug", "dog", "sarg‘ay",
+            "sarg'ay", "chir", "nam"
+        ],
+        "pest": [
+            "zararkunanda", "hasharot", "qurt", "kana",
+            "shira", "kapalak"
+        ],
+        "fertilizer": [
+            "o‘g‘it", "o'g'it", "azot", "oziqa"
+        ],
+        "soil": [
+            "tuproq", "drenaj", "begona", "mulch"
+        ],
+    }
+
+    if topic == "general":
+        selected = random.sample(
+            advice,
+            min(limit, len(advice))
+        )
+        return selected
+
+    keywords = topic_keywords.get(topic, [])
+
+    relevant = [
+        item
+        for item in advice
+        if any(
+            normalize_text(keyword) in normalize_text(item)
+            for keyword in keywords
+        )
     ]
 
-    # Savol mavzusi
-    if topics:
-        response.append(intent_intro(intent))
-        response.append("")
-
-        # Eng muhim mavzularni birinchi chiqaramiz.
-        topic_order = [
-            "sug'orish",
-            "kasallik",
-            "zararkunanda",
-            "sarg'ayish",
-            "so'lish",
-            "issiq",
-            "sovuq",
-            "yomg'ir",
-            "teplitsa",
-            "o'g'it",
-            "tuproq",
+    # Yetarli maslahat topilmasa umumiy maslahatdan to‘ldiramiz
+    if len(relevant) < limit:
+        remaining = [
+            item
+            for item in advice
+            if item not in relevant
         ]
 
-        selected_topics = [
-            topic
-            for topic in topic_order
-            if topic in topics
-        ]
+        random.shuffle(remaining)
+        relevant.extend(remaining)
 
-        for topic in selected_topics[:3]:
-            response.append(
-                f"🔸 {topic.replace('_', ' ').upper()}"
-            )
+    random.shuffle(relevant)
 
-            for item in GENERAL_TOPIC_ADVICE.get(topic, [])[:5]:
-                response.append(f"• {item}")
-
-            response.append("")
-
-    # Ekin bo‘yicha bilimlar
-    response.append("🌱 EKIN BO‘YICHA BATAFSIL:")
-    response.append("")
-
-    # Agar topic bor bo‘lsa, umumiy maslahatlarni ham chiqaramiz.
-    # Lekin javobni keragidan ortiq cho‘zmaymiz.
-    for index, item in enumerate(advice[:18], start=1):
-        response.append(f"{index}. {item}")
-
-    response.extend([
-        "",
-        "⚠️ Eslatma:",
-        "Aniq tavsiya ekinning yoshi, tuproq turi, oxirgi sug‘orish vaqti va mahalliy ob-havoga qarab o‘zgarishi mumkin.",
-        "",
-        "💬 Yanada aniq maslahat uchun savolingizga ekinning holatini qo‘shing.",
-        "Masalan: «Barglari sarg‘aygan», «3 kundan beri suv bermadim», «bugun yom‘ir yog‘di»."
-    ])
-
-    return "\n".join(response)
+    return relevant[:limit]
 
 
 # =========================================================
-# 9. EKIN TOPILMAGAN HOLAT
-# =========================================================
-
-def build_general_answer(
-    topics: List[str],
-    intent: str,
-) -> str:
-
-    response: List[str] = [
-        "🧠 DEHQON AI",
-        "",
-    ]
-
-    if topics:
-        response.append(intent_intro(intent))
-        response.append("")
-
-        for topic in topics[:3]:
-            response.append(
-                f"🔸 {topic.replace('_', ' ').upper()}"
-            )
-
-            for item in GENERAL_TOPIC_ADVICE.get(topic, [])[:5]:
-                response.append(f"• {item}")
-
-            response.append("")
-
-    response.extend([
-        "🌱 Aniqroq maslahat uchun ekin nomini ham yozing.",
-        "",
-        "Masalan:",
-        "🍅 pamidorni qachon sugoraman",
-        "🥒 bodringga suv beraymi",
-        "🥔 картошка почему желтеет",
-        "🌶 qalampir bargi sargayib qopti",
-        "🌽 makkajo‘xori issiqda nima qilaman",
-        "🏡 теплица ichida namlik ko‘p",
-    ])
-
-    return "\n".join(response)
-
-
-# =========================================================
-# 10. ASOSIY FUNKSIYA
+# ASOSIY AI MASLAHAT FUNKSIYASI
 # =========================================================
 
 def get_ai_advice(question: str) -> str:
     """
-    Telegram bot uchun asosiy funksiya.
+    Dehqon AI uchun asosiy maslahat funksiyasi.
 
-    main.py:
-        answer = get_ai_advice(question)
+    Foydalanuvchi:
+    - o‘zbekcha
+    - ruscha
+    - qisqartirib
+    - xato yozib
+    - emoji bilan
+    yozsa ham ekinni aniqlashga harakat qiladi.
     """
 
-    if not question or not str(question).strip():
+    original_question = question.strip()
+
+    if not original_question:
         return (
-            "🧠 DEHQON AI\n\n"
+            "🌱 <b>DEHQON AI</b>\n\n"
             "Savolingizni yozing.\n\n"
             "Masalan:\n"
-            "🍅 Pomidor barglari sarg‘ayib qoldi.\n"
-            "🥒 bodring qachon sugoriladi?\n"
-            "🥔 картошка почему желтеет?\n"
-            "🌶 qalampirga suv beraymi?\n"
-            "🏡 теплица juda issiq."
+            "🍅 pamidorni qachon sugoray?\n"
+            "🥕 sabziga qancha suv kerak?\n"
+            "🥒 bodringim sargayapti\n"
+            "🥔 kartoshkaga yomgir yog'sa nima qilaman?\n"
+            "🌾 bugdoyga ogit kerakmi?"
         )
 
-    normalized = normalize_text(question)
+    crop_key = detect_crop(original_question)
 
-    crop_key = find_crop(normalized)
-    topics = find_topics(normalized)
-    intent = detect_intent(normalized)
-
-    # Ekin topilgan bo‘lsa — chuqur javob.
-    if crop_key:
-        return build_crop_answer(
-            crop_key=crop_key,
-            topics=topics,
-            intent=intent,
-            question=question,
+    if crop_key is None:
+        return (
+            "🧠 <b>DEHQON AI</b>\n\n"
+            "Savolingizni tushunishga harakat qildim, "
+            "lekin qaysi ekin haqida gapirayotganingizni aniqlay olmadim.\n\n"
+            "🌱 Masalan:\n"
+            "🍅 pamidorni sugorish kerakmi?\n"
+            "🥕 sabzi sargayapti\n"
+            "🥒 bodringda dog paydo bo'ldi\n"
+            "🥔 kartoshkaga yomgir yogdi\n"
+            "🌾 bugdoyga qaysi ogit kerak?\n\n"
+            "💡 Ekin nomini oddiy yoki qisqartirib yozishingiz mumkin."
         )
 
-    # Ekin topilmasa — umumiy maslahat.
-    return build_general_answer(
-        topics=topics,
-        intent=intent,
+    crop = CROPS[crop_key]
+    topic = detect_topic(original_question)
+
+    selected_advice = get_relevant_advice(
+        crop_key=crop_key,
+        topic=topic,
+        limit=5,
     )
 
+    topic_titles = {
+        "watering": "💧 SUG‘ORISH",
+        "rain": "🌧 YOMG‘IR",
+        "heat": "🔥 ISSIQ OB-HAVO",
+        "cold": "❄️ SOVUQ OB-HAVO",
+        "disease": "🦠 KASALLIK",
+        "pest": "🐛 ZARARKUNANDA",
+        "fertilizer": "🌱 OZIQLANTIRISH",
+        "soil": "🌍 TUPROQ",
+        "general": "🌱 PARVARISH",
+    }
+
+    title = topic_titles.get(topic, "🌱 PARVARISH")
+
+    result = (
+        f"{crop['name']}\n\n"
+        f"<b>{title}</b>\n\n"
+    )
+
+    for index, advice in enumerate(selected_advice, start=1):
+        result += f"{index}. {advice}\n\n"
+
+    result += (
+        "━━━━━━━━━━━━━━\n"
+        "🧠 <b>Dehqon AI tavsiyasi</b>\n"
+        "Maslahat ob-havo, tuproq turi, ekinning yoshi "
+        "va rivojlanish bosqichiga qarab o‘zgarishi mumkin.\n\n"
+        "📌 Aniqroq maslahat uchun ekinning holatini "
+        "ham yozing: masalan, <i>“pamidor bargi sarg‘ayapti”</i>."
+    )
+
+    return result
+
 
 # =========================================================
-# 11. TEST UCHUN
+# EKINLAR RO‘YXATI
 # =========================================================
 
-if __name__ == "__main__":
-
-    test_questions = [
-        "pamidorni qachon sugorish kere",
-        "памидор когда поливать",
-        "bodring bargi sargayib qopti",
-        "картошка почему желтеет",
-        "qalampirni issiqda qanaqa qaray",
-        "makkajo qachon suv beraman",
-        "теплица ichida namlik kop",
-        "pomidor yomgir yogandan keyin nima qilay",
-    ]
-
-    for question in test_questions:
-        print("=" * 70)
-        print("SAVOL:", question)
-        print()
-        print(get_ai_advice(question))
-        print()
+def get_crop_list() -> list[tuple[str, str]]:
+    """Menyu uchun barcha ekinlarni qaytaradi."""
+    return [
+        (crop_key, crop_data["name"])
+        for crop_key, crop_data in CROPS.items()
+    ]       
