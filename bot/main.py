@@ -5,6 +5,8 @@ from pathlib import Path
 from dotenv import load_dotenv
 
 from aiogram import Bot, Dispatcher, F
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums import ParseMode
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
@@ -48,19 +50,16 @@ ENV_FILE = BASE_DIR / ".env"
 # 2. Agar local bo'lsa .env'dan oladi
 load_dotenv(ENV_FILE)
 
-def get_bot_token() -> str:
-    token = os.getenv("BOT_TOKEN")
+BOT_TOKEN: str = os.getenv("BOT_TOKEN") or ""
 
-    if not token:
-        raise RuntimeError(
-            "BOT_TOKEN topilmadi! "
-            "Railway Variables yoki local .env faylni tekshiring."
-        )
+if not BOT_TOKEN:
+    raise ValueError(
+        "BOT_TOKEN topilmadi! Railway Variables yoki .env faylni tekshiring."
+    )
 
-    return token.strip()
+BOT_TOKEN = BOT_TOKEN.strip()
 
 
-BOT_TOKEN: str = get_bot_token()
 # =========================================================
 # BOT
 # =========================================================
@@ -163,130 +162,16 @@ crop_keyboard = ReplyKeyboardMarkup(
         ],
         [
             KeyboardButton(text="🥔 Kartoshka"),
-            KeyboardButton(text="🥕 Sabzi"),
-        ],
-        [
-            KeyboardButton(text="🧅 Piyoz"),
-            KeyboardButton(text="🧄 Sarimsoq"),
-        ],
-        [
-            KeyboardButton(text="🫑 Qalampir"),
-            KeyboardButton(text="🍆 Baqlajon"),
-        ],
-        [
-            KeyboardButton(text="🥬 Karam"),
-            KeyboardButton(text="🥗 Salat"),
-        ],
-        [
-            KeyboardButton(text="🍉 Tarvuz"),
-            KeyboardButton(text="🍈 Qovun"),
-        ],
-        [
-            KeyboardButton(text="🍓 Qulupnay"),
-            KeyboardButton(text="🍇 Uzum"),
-        ],
-        [
             KeyboardButton(text="🍎 Mevali daraxtlar"),
+        ],
+        [
             KeyboardButton(text="⬅️ Bosh menyu"),
         ],
     ],
     resize_keyboard=True,
-    input_field_placeholder="Ekin nomini yozing yoki tanlang...",
 )
 
 
-# =========================================================
-# CROP SELECTED
-# =========================================================
-
-CROP_BUTTONS = {
-    "🌾 Bug‘doy": "bug'doy",
-    "🌽 Makkajo‘xori": "makkajo'xori",
-    "🍅 Pomidor": "pomidor",
-    "🥒 Bodring": "bodring",
-    "🥔 Kartoshka": "kartoshka",
-    "🥕 Sabzi": "sabzi",
-    "🧅 Piyoz": "piyoz",
-    "🧄 Sarimsoq": "sarimsoq",
-    "🫑 Qalampir": "qalampir",
-    "🍆 Baqlajon": "baqlajon",
-    "🥬 Karam": "karam",
-    "🥗 Salat": "salat",
-    "🍉 Tarvuz": "tarvuz",
-    "🍈 Qovun": "qovun",
-    "🍓 Qulupnay": "qulupnay",
-    "🍇 Uzum": "uzum",
-    "🍎 Mevali daraxtlar": "mevali_daraxtlar",
-}
-
-
-@dp.message(F.text.in_(CROP_BUTTONS.keys()))
-async def crop_selected_handler(
-    message: Message,
-    state: FSMContext,
-):
-    await state.clear()
-
-    crop_key = CROP_BUTTONS.get(message.text)
-
-    if not crop_key:
-        await message.answer(
-            "❌ Ekin nomi aniqlanmadi.\n\n"
-            "Iltimos, ekinni menyudan tanlang.",
-            reply_markup=crop_keyboard,
-        )
-        return
-
-    loading_message = await message.answer(
-        "⏳ Bugungi real ob-havo olinmoqda...\n"
-        "🧠 Ekin uchun tavsiya tayyorlanmoqda..."
-    )
-
-    latitude = 41.0011
-    longitude = 71.6683
-
-    try:
-        weather = await get_weather(
-            latitude=latitude,
-            longitude=longitude,
-        )
-
-        temperature = weather["current"]["temperature_2m"]
-
-        rain_probability = weather[
-            "daily"
-        ]["precipitation_probability_max"][0]
-
-        result = format_crop(
-            crop_key=crop_key,
-            temperature=temperature,
-            rain_probability=rain_probability,
-        )
-
-        try:
-            await asyncio.sleep(1.5)
-            await loading_message.delete()
-        except Exception:
-            pass
-
-        await message.answer(
-            result,
-            reply_markup=crop_keyboard,
-        )
-
-    except Exception as error:
-        print("CROP ERROR:", error)
-
-        try:
-            await loading_message.delete()
-        except Exception:
-            pass
-
-        await message.answer(
-            "❌ Ekin ma’lumotlarini olishda xatolik yuz berdi.\n\n"
-            "Iltimos, birozdan keyin qayta urinib ko‘ring.",
-            reply_markup=crop_keyboard,
-        )
 # =========================================================
 # REGIONS
 # =========================================================
@@ -682,19 +567,22 @@ async def greenhouse_humidity_handler(
 # CROPS MENU
 # =========================================================
 
-@dp.message(F.text.in_({"🌱 Ekinlar", "Ekinlar", "ekinlar", "ekin"}))
-async def crops_handler(message: Message, state: FSMContext):
+@dp.message(F.text == "🌱 Ekinlar")
+async def crops_handler(
+    message: Message,
+    state: FSMContext,
+):
+
     await state.clear()
 
     await message.answer(
-        "🌱 <b>EKINLAR</b>\n\n"
+        "🌱 EKINLAR\n\n"
         "Qaysi ekin haqida ma’lumot kerak?\n\n"
-        "👇 Ekinni tanlang yoki nomini o‘zingiz yozing:",
+        "👇 Ekinni tanlang:",
         reply_markup=crop_keyboard,
     )
-# =========================================================
-# CROP SELECTED
-# =========================================================
+
+
 # =========================================================
 # CROP SELECTED
 # =========================================================
@@ -704,41 +592,33 @@ async def crop_selected_handler(
     message: Message,
     state: FSMContext,
 ):
+
     await state.clear()
 
     crop_key = message.text
 
     if not crop_key:
         await message.answer(
-            "❌ Ekin nomi aniqlanmadi.\n\n"
-            "Iltimos, ekinni menyudan tanlang.",
+            "❌ Ekin nomi aniqlanmadi. Iltimos, ekinni menyudan tanlang.",
             reply_markup=crop_keyboard,
         )
         return
 
     crop_key = crop_key.strip()
 
-    # -----------------------------------------------------
-    # Vaqtinchalik loading xabari
-    # -----------------------------------------------------
-
-    loading_message = await message.answer(
+    await message.answer(
         "⏳ Bugungi real ob-havo olinmoqda...\n"
         "🧠 Ekin uchun tavsiya tayyorlanmoqda..."
     )
 
-    # -----------------------------------------------------
-    # Hozircha Namangan
-    # Keyinchalik profil orqali hudud olinadi
-    # -----------------------------------------------------
+    # Hozircha Namangan.
+    # Keyingi bosqichda foydalanuvchining
+    # tanlagan hududini profilga saqlaymiz.
 
     latitude = 41.0011
     longitude = 71.6683
 
     try:
-        # -------------------------------------------------
-        # Ob-havoni olish
-        # -------------------------------------------------
 
         weather = await get_weather(
             latitude=latitude,
@@ -753,29 +633,11 @@ async def crop_selected_handler(
             "daily"
         ]["precipitation_probability_max"][0]
 
-        # -------------------------------------------------
-        # Ekin bo‘yicha aqlli tavsiya
-        # -------------------------------------------------
-
         result = format_crop(
             crop_key=crop_key,
             temperature=temperature,
             rain_probability=rain_probability,
         )
-
-        # -------------------------------------------------
-        # Loading xabarini o‘chirish
-        # -------------------------------------------------
-
-        try:
-            await asyncio.sleep(1.5)
-            await loading_message.delete()
-        except Exception:
-            pass
-
-        # -------------------------------------------------
-        # Yakuniy natija
-        # -------------------------------------------------
 
         await message.answer(
             result,
@@ -786,17 +648,12 @@ async def crop_selected_handler(
 
         print("CROP ERROR:", error)
 
-        # Xatolik bo‘lsa ham loading xabarini o‘chiramiz
-        try:
-            await loading_message.delete()
-        except Exception:
-            pass
-
         await message.answer(
-            "❌ Ekin ma’lumotlarini olishda xatolik yuz berdi.\n\n"
-            "Iltimos, birozdan keyin qayta urinib ko‘ring.",
+            "❌ Ekin ma’lumotlarini olishda "
+            "xatolik yuz berdi.",
             reply_markup=crop_keyboard,
         )
+
 
 # =========================================================
 # AI MENU
@@ -870,6 +727,33 @@ async def ai_question_handler(
 
     finally:
         await state.clear()
+
+# =========================================================
+# ALERTS
+# =========================================================
+
+@dp.message(F.text == "🚨 Ogohlantirishlar")
+async def alerts_handler(
+    message: Message,
+    state: FSMContext,
+):
+
+    await state.clear()
+
+    await message.answer(
+        "🚨 OGOHLANTIRISHLAR\n\n"
+
+        "🌧 Kuchli yomg‘ir\n"
+        "💨 Kuchli shamol\n"
+        "❄️ Sovuq\n"
+        "🔥 Kuchli issiq\n"
+        "⛈ Momaqaldiroq\n\n"
+
+        "📡 Avtomatik ogohlantirish tizimi "
+        "keyingi bosqichda ulanadi.",
+
+        reply_markup=main_keyboard,
+    )
 
 
 # =========================================================
@@ -954,11 +838,13 @@ async def back_handler(
 # =========================================================
 # UNKNOWN MESSAGE
 # =========================================================
+
 @dp.message()
 async def unknown_handler(
     message: Message,
     state: FSMContext,
 ):
+
     await state.clear()
 
     await message.answer(
@@ -966,6 +852,8 @@ async def unknown_handler(
         "👇 Menyudan bo‘lim tanlang.",
         reply_markup=main_keyboard,
     )
+
+
 # =========================================================
 # RUN BOT
 # =========================================================
@@ -980,7 +868,12 @@ async def main():
     print("🧠 AI ADVISOR READY!")
     print("===================================")
 
-    async with Bot(token=BOT_TOKEN) as polling_bot:
+    async with Bot(
+        token=BOT_TOKEN,
+        default=DefaultBotProperties(
+            parse_mode=ParseMode.HTML
+        ),
+    ) as polling_bot:
         await dp.start_polling(polling_bot)
 
 
